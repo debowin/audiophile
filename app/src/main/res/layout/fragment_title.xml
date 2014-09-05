@@ -11,10 +11,10 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
         android:layout_margin="5dp"
         android:id="@+id/bBrowse"
-        android:layout_alignParentLeft="true"/>
+        android:layout_alignParentLeft="true"
+        android:background="@android:drawable/ic_dialog_dialer"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,5 +26,13 @@
         android:layout_alignBottom="@+id/bBrowse"
         android:layout_marginTop="10dp"
         android:layout_centerInParent="true"
-        android:layout_alignTop="@+id/bBrowse" />
+        android:layout_alignTop="@+id/bBrowse"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:id="@+id/bVolume"
+        android:layout_alignParentRight="true"
+        android:background="@android:drawable/ic_lock_silent_mode_off"/>
 </RelativeLayout>
