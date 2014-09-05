@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="50dp"
+    android:weightSum="1">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/ic_launcher" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="audiophile"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0.0.1alpha"
+        android:id="@+id/tvAboutVersion"
+        android:layout_gravity="center_horizontal" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView"
+        android:layout_weight="0.60">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus neque nulla, accumsan nec porta vitae, mattis nec velit. Suspendisse ultricies dui et fermentum sollicitudin. Donec blandit fermentum nisi, eu pharetra quam tincidunt vel. Morbi tincidunt sem neque, ac semper metus lobortis vitae. Phasellus bibendum lectus eget massa venenatis, et tristique velit eleifend. Nam at vulputate purus, quis blandit diam. Nam id blandit magna, non tincidunt ante. Donec arcu libero, elementum id diam cursus, interdum aliquet augue. Mauris congue iaculis lacus, id posuere libero suscipit vitae. Ut pharetra felis nunc, at luctus risus efficitur et. " />
+    </ScrollView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Developed by d360"
+        android:id="@+id/tvAboutBy"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

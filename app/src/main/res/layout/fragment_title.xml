@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="0px"
+    android:background="#ff000000"
+    android:gravity="top"
+    android:layout_weight="30">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        android:layout_margin="5dp"
+        android:id="@+id/bBrowse"
+        android:layout_alignParentLeft="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Now Playing"
+        android:id="@+id/tvSongTitle"
+        android:textColor="#ffffffff"
+        android:layout_alignBottom="@+id/bBrowse"
+        android:layout_marginTop="10dp"
+        android:layout_centerInParent="true"
+        android:layout_alignTop="@+id/bBrowse" />
+</RelativeLayout>

@@ -6,9 +6,19 @@
     android:background="@drawable/splash"
     android:gravity="bottom">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Now Loading..."
+        android:id="@+id/tvLoading"
+        android:layout_gravity="center_horizontal"
+        android:textColor="#fff5f7ff" />
+
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/pb" />
+        android:id="@+id/pbLoading"
+        android:indeterminate="false" />
 </LinearLayout>
