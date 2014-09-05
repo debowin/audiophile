@@ -3,12 +3,12 @@
     tools:context=".PlayerActivity" >
     <item android:id="@+id/action_search"
         android:title="Search"
-        android:icon="@android:drawable/ic_menu_search"
+        android:icon="@drawable/search"
         android:orderInCategory="1"
         android:showAsAction="always" />
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:icon="@drawable/settings"
         android:orderInCategory="2"
         android:showAsAction="always" />
     <item android:id="@+id/action_about"

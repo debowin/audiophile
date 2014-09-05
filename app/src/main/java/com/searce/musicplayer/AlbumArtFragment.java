@@ -11,7 +11,6 @@ import android.widget.TextView;
  * Created by root on 5/9/14.
  */
 public class AlbumArtFragment extends Fragment {
-    TextView tvStatus;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_albumart,container,false);
@@ -21,10 +20,5 @@ public class AlbumArtFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        tvStatus = (TextView) getActivity().findViewById(R.id.tvStatus);
-    }
-
-    public void changeStatus(String newStatus){
-        tvStatus.setText(newStatus);
     }
 }

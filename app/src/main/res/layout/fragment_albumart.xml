@@ -19,24 +19,15 @@
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="0dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="No Button Clicked"
-        android:id="@+id/tvStatus"
-        android:layout_marginTop="5dp"
-        android:layout_gravity="center_horizontal"
-        android:textColor="#ffffffff"
-        android:layout_alignTop="@+id/ivAlbumArt"
-        android:layout_centerHorizontal="true" />
-
     <RatingBar
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:id="@+id/rbRating"
         android:numStars="5"
         android:stepSize="1"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:layout_marginBottom="10dp"/>
 </RelativeLayout>

@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 interface Communicator{
+    public void tell_parent(int id,boolean status);
     public void tell_parent(int id);
 }
 
@@ -72,16 +73,33 @@ public class MainActivity extends Activity implements Communicator{
     }
 
     @Override
+    public void tell_parent(int id, boolean status) {
+        switch(id){
+            case R.id.tbRep:
+                if(status == true)
+                    titleFrag.changeTitle("Repeat Enabled");
+                else
+                    titleFrag.changeTitle("Repeat Disabled");
+                break;
+            case R.id.tbShuf:
+                if(status == true)
+                    titleFrag.changeTitle("Shuffle Enabled");
+                else
+                    titleFrag.changeTitle("Shuffle Disabled");
+                break;
+        }
+    }
+    @Override
     public void tell_parent(int id) {
         switch(id){
             case R.id.bPlay:
-                artFrag.changeStatus("Play Button Pressed!");
+                titleFrag.changeTitle("Play Button Pressed!");
                 break;
             case R.id.bNext:
-                artFrag.changeStatus("Next Button Pressed!");
+                titleFrag.changeTitle("Next Button Pressed!");
                 break;
             case R.id.bPrev:
-                artFrag.changeStatus("Previous Button Pressed!");
+                titleFrag.changeTitle("Previous Button Pressed!");
                 break;
         }
     }

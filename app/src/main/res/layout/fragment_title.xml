@@ -9,30 +9,59 @@
     android:layout_weight="30">
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginLeft="5dp"
         android:id="@+id/bBrowse"
-        android:layout_alignParentLeft="true"
-        android:background="@android:drawable/ic_dialog_dialer"/>
+        android:background="@drawable/custom_store"
+        android:layout_alignBaseline="@+id/tvAlbum"
+        android:layout_alignBottom="@+id/tvAlbum"
+        android:layout_alignParentLeft="true"/>
+
+    <Button
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/bVolume"
+        android:layout_marginRight="5dp"
+        android:background="@drawable/custom_volume"
+        android:layout_alignBaseline="@+id/tvAlbum"
+        android:layout_alignBottom="@+id/tvAlbum"
+        android:layout_alignParentRight="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Now Playing"
+        android:layout_marginTop="5dp"
         android:id="@+id/tvSongTitle"
         android:textColor="#ffffffff"
-        android:layout_alignBottom="@+id/bBrowse"
-        android:layout_marginTop="10dp"
-        android:layout_centerInParent="true"
-        android:layout_alignTop="@+id/bBrowse"/>
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:id="@+id/bVolume"
-        android:layout_alignParentRight="true"
-        android:background="@android:drawable/ic_lock_silent_mode_off"/>
+        android:text="New Album"
+        android:id="@+id/tvAlbum"
+        android:layout_below="@+id/tvSongTitle"
+        android:layout_centerHorizontal="true"
+        android:textColor="#ffffffff" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="John Doe"
+        android:id="@+id/tvArtist"
+        android:textColor="#ffffffff"
+        android:layout_below="@+id/tvAlbum"
+        android:layout_centerHorizontal="true" />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#ffffffff"
+        android:layout_below="@+id/tvArtist"
+        ></View>
+
 </RelativeLayout>
