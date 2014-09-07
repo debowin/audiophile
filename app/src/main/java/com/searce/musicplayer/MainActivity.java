@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 
 interface Communicator{
@@ -26,6 +27,12 @@ interface Communicator{
     ArrayList<File> get_song_list();
 
     public void set_song_list(ArrayList<File> songs);
+
+    MediaPlayer get_song();
+
+    void set_progress(int i);
+
+    void set_volume(float vol);
 }
 
 public class MainActivity extends Activity implements Communicator{
@@ -38,6 +45,7 @@ public class MainActivity extends Activity implements Communicator{
     ArrayList<File> songFiles;
     MediaPlayer song;
     int songId;
+    float songVol;
 
     FragmentManager manager;
     @Override
@@ -53,6 +61,7 @@ public class MainActivity extends Activity implements Communicator{
             songListFragment = new SongListFragment();
             categoryFragment = new CategoryFragment();
             miniPlayerFragment = new MiniPlayerFragment();
+            songVol = 0.5f;
             show_list();
         }
     }
@@ -117,11 +126,49 @@ public class MainActivity extends Activity implements Communicator{
                 togglePlayPause();
                 break;
             case R.id.bNext:
-                titleFrag.changeTitle("Next Button Pressed!");
+                nextSong();
                 break;
             case R.id.bPrev:
-                titleFrag.changeTitle("Previous Button Pressed!");
+                prevSong();
                 break;
+        }
+    }
+
+    private void prevSong() {
+        if (songId == 0)
+            return;
+        //TODO: If on repeat, start playing again
+        if (song.getCurrentPosition() > 3000) {
+            song.seekTo(0);
+            return;
+        }
+        songId -= 1;
+        String filename = songFiles.get(songId).toString();
+        try {
+            song.reset();
+            song.setDataSource(getBaseContext(), Uri.parse(filename));
+            song.prepare();
+            song.start();
+            playerFrag.playPause("play");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void nextSong() {
+        if (songId + 1 == songFiles.size())
+            return;
+        //TODO: If on repeat, start playing again
+        songId += 1;
+        String filename = songFiles.get(songId).toString();
+        try {
+            song.reset();
+            song.setDataSource(getBaseContext(), Uri.parse(filename));
+            song.prepare();
+            song.start();
+            playerFrag.playPause("play");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -138,7 +185,7 @@ public class MainActivity extends Activity implements Communicator{
     @Override
     public void open_song(int position) {
         songId = position;
-        String filename = songFiles.get(position).toString();
+        String filename = songFiles.get(songId).toString();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.remove(categoryFragment);
         transaction.remove(songListFragment);
@@ -149,6 +196,7 @@ public class MainActivity extends Activity implements Communicator{
         transaction.add(R.id.container, titleFrag);
         transaction.commit();
         try {
+            song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
             song.prepare();
             song.start();
@@ -161,9 +209,9 @@ public class MainActivity extends Activity implements Communicator{
     public void show_list() {
         manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(titleFrag);
-        transaction.remove(artFrag);
         transaction.remove(playerFrag);
+        transaction.remove(artFrag);
+        transaction.remove(titleFrag);
         transaction.add(R.id.container, categoryFragment);
         transaction.add(R.id.container, songListFragment);
         transaction.add(R.id.container, miniPlayerFragment);
@@ -179,6 +227,24 @@ public class MainActivity extends Activity implements Communicator{
     @Override
     public void set_song_list(ArrayList<File> songs) {
         songFiles = songs;
+    }
+
+    @Override
+    public MediaPlayer get_song() {
+        return song;
+    }
+
+    @Override
+    public void set_progress(int i) {
+        song.seekTo(i);
+    }
+
+    @Override
+    public void set_volume(float vol) {
+        if (vol < 0)
+            song.setVolume(songVol, songVol);
+        else
+            song.setVolume(vol, vol);
     }
 
     @Override
