@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ToggleButton;
 
 /**
@@ -42,11 +41,17 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
 
     @Override
     public void onClick(View v) {
-        comm.tell_parent(v.getId());
+        comm.song_operations(v.getId());
     }
 
+    public void playPause(String status) {
+        if (status.contentEquals("play"))
+            bPlay.setBackgroundResource(R.drawable.custom_pause);
+        else
+            bPlay.setBackgroundResource(R.drawable.custom_play);
+    }
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-        comm.tell_parent(compoundButton.getId(),b);
+        comm.playback_mode(compoundButton.getId(), b);
     }
 }

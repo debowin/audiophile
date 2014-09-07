@@ -1,92 +1,91 @@
-<LinearLayout
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="0px"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:gravity="bottom"
     android:layout_weight="40"
-    android:background="#ff000000">
+    android:background="#ff000000"
+    android:gravity="bottom"
+    android:orientation="vertical">
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
-        android:weightSum="1"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="1">
 
         <TextView
-            android:layout_marginTop="5dp"
+            android:id="@+id/tvElapsed"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_marginTop="5dp"
             android:text="00:00"
-            android:id="@+id/tvElapsed"
             android:textAlignment="center"
             android:textColor="@android:color/holo_blue_light" />
 
         <SeekBar
+            android:id="@+id/sbTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/sbTime"
-            android:indeterminate="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:indeterminate="false" />
 
         <TextView
-            android:layout_marginTop="5dp"
+            android:id="@+id/tvRemaining"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_marginTop="5dp"
             android:text="99:99"
-            android:id="@+id/tvRemaining"
             android:textAlignment="center"
             android:textColor="@android:color/holo_blue_light" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <ToggleButton
+            android:id="@+id/tbShuf"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginRight="30dp"
             android:background="@drawable/custom_shuffle"
+            android:checked="false"
             android:text=""
             android:textOff=""
-            android:textOn=""
-            android:id="@+id/tbShuf"
-            android:checked="false"
-            android:layout_marginRight="30dp" />
+            android:textOn="" />
 
         <Button
+            android:id="@+id/bPrev"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:id="@+id/bPrev"
-            android:background="@drawable/custom_previous"/>
+            android:background="@drawable/custom_previous" />
 
         <Button
+            android:id="@+id/bPlay"
             android:layout_width="wrap_content"
             android:layout_height="60dp"
-            android:background="@drawable/custom_play"
-            android:id="@+id/bPlay" />
+            android:background="@drawable/custom_pause" />
 
         <Button
+            android:id="@+id/bNext"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:id="@+id/bNext"
             android:background="@drawable/custom_next" />
 
         <ToggleButton
+            android:id="@+id/tbRep"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginLeft="30dp"
             android:background="@drawable/custom_repeat"
             android:text=""
             android:textOff=""
-            android:textOn=""
-            android:id="@+id/tbRep"
-            android:layout_marginLeft="30dp" />
+            android:textOn="" />
     </LinearLayout>
 
 </LinearLayout>

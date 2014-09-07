@@ -1,38 +1,59 @@
 package com.searce.musicplayer;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
 interface Communicator{
-    public void tell_parent(int id,boolean status);
-    public void tell_parent(int id);
+    public void playback_mode(int id, boolean status);
+
+    public void song_operations(int id);
+
+    public void open_song(int position);
+
+    public void show_list();
+
+    ArrayList<File> get_song_list();
+
+    public void set_song_list(ArrayList<File> songs);
 }
 
 public class MainActivity extends Activity implements Communicator{
     PlayerFragment playerFrag;
     AlbumArtFragment artFrag;
     TitleFrag titleFrag;
+    SongListFragment songListFragment;
+    CategoryFragment categoryFragment;
+    MiniPlayerFragment miniPlayerFragment;
+    ArrayList<File> songFiles;
+    MediaPlayer song;
+    int songId;
+
     FragmentManager manager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         if (savedInstanceState == null) {
+            songFiles = new ArrayList<File>();
+            song = new MediaPlayer();
             playerFrag = new PlayerFragment();
             artFrag = new AlbumArtFragment();
             titleFrag = new TitleFrag();
-            manager = getFragmentManager();
-            FragmentTransaction transaction =  manager.beginTransaction();
-            transaction.add(R.id.container, titleFrag);
-            transaction.add(R.id.container, artFrag);
-            transaction.add(R.id.container, playerFrag);
-            transaction.commit();
+            songListFragment = new SongListFragment();
+            categoryFragment = new CategoryFragment();
+            miniPlayerFragment = new MiniPlayerFragment();
+            show_list();
         }
     }
 
@@ -73,7 +94,7 @@ public class MainActivity extends Activity implements Communicator{
     }
 
     @Override
-    public void tell_parent(int id, boolean status) {
+    public void playback_mode(int id, boolean status) {
         switch(id){
             case R.id.tbRep:
                 if(status == true)
@@ -90,10 +111,10 @@ public class MainActivity extends Activity implements Communicator{
         }
     }
     @Override
-    public void tell_parent(int id) {
+    public void song_operations(int id) {
         switch(id){
             case R.id.bPlay:
-                titleFrag.changeTitle("Play Button Pressed!");
+                togglePlayPause();
                 break;
             case R.id.bNext:
                 titleFrag.changeTitle("Next Button Pressed!");
@@ -102,5 +123,68 @@ public class MainActivity extends Activity implements Communicator{
                 titleFrag.changeTitle("Previous Button Pressed!");
                 break;
         }
+    }
+
+    private void togglePlayPause() {
+        if (song.isPlaying()) {
+            playerFrag.playPause("pause");
+            song.pause();
+        } else {
+            playerFrag.playPause("play");
+            song.start();
+        }
+    }
+
+    @Override
+    public void open_song(int position) {
+        songId = position;
+        String filename = songFiles.get(position).toString();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(categoryFragment);
+        transaction.remove(songListFragment);
+        transaction.remove(miniPlayerFragment);
+
+        transaction.add(R.id.container, playerFrag);
+        transaction.add(R.id.container, artFrag);
+        transaction.add(R.id.container, titleFrag);
+        transaction.commit();
+        try {
+            song.setDataSource(getBaseContext(), Uri.parse(filename));
+            song.prepare();
+            song.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void show_list() {
+        manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(titleFrag);
+        transaction.remove(artFrag);
+        transaction.remove(playerFrag);
+        transaction.add(R.id.container, categoryFragment);
+        transaction.add(R.id.container, songListFragment);
+        transaction.add(R.id.container, miniPlayerFragment);
+
+        transaction.commit();
+    }
+
+    @Override
+    public ArrayList<File> get_song_list() {
+        return songFiles;
+    }
+
+    @Override
+    public void set_song_list(ArrayList<File> songs) {
+        songFiles = songs;
+    }
+
+    @Override
+    protected void onStop() {
+        song.release();
+        finish();
+        super.onStop();
     }
 }
