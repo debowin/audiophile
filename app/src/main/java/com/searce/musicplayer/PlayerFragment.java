@@ -24,6 +24,8 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     TextView tvElapsed, tvRemaining;
     Communicator comm;
     AsyncPlay asyncPlay;
+    int new_progress;
+    boolean skip_progress_updates;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,6 +53,13 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         seekBar.setOnSeekBarChangeListener(this);
         asyncPlay = new AsyncPlay();
         asyncPlay.execute();
+        if (!comm.get_song().isPlaying()) {
+            int elapsed = comm.get_song().getCurrentPosition() / 1000;
+            int remaining = (comm.get_song().getDuration() - comm.get_song().getCurrentPosition()) / 1000;
+            tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
+            tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
+            bPlay.setBackgroundResource(R.drawable.custom_play);
+        }
     }
 
     @Override
@@ -69,6 +78,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
             bPlay.setBackgroundResource(R.drawable.custom_pause);
         else
             bPlay.setBackgroundResource(R.drawable.custom_play);
+        seekBar.setMax(comm.get_song().getDuration());
     }
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -76,19 +86,27 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-        if (b)
-            comm.set_progress(i);
+    public void onProgressChanged(final SeekBar seekBar, int i, boolean b) {
+        if (b) {
+            new_progress = i;
+            int elapsed = new_progress / 1000;
+            int remaining = (seekBar.getMax() - new_progress) / 1000;
+            tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
+            tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
+        }
     }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
         comm.set_volume(0);
+        skip_progress_updates = true;
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        comm.set_volume(-1);
+        comm.set_progress(new_progress);
+        skip_progress_updates = false;
+        comm.set_volume(1);
     }
 
     public class AsyncPlay extends AsyncTask<Void, Void, Void> {
@@ -100,12 +118,19 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         @Override
         protected Void doInBackground(Void... voids) {
             while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (skip_progress_updates) {
+                    continue;
                 }
                 if (comm.get_song().isPlaying()) {
+                    if (tvElapsed.getVisibility() == View.INVISIBLE) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvElapsed.setVisibility(View.VISIBLE);
+                                tvRemaining.setVisibility(View.VISIBLE);
+                            }
+                        });
+                    }
                     seekBar.setProgress(comm.get_song().getCurrentPosition());
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
@@ -113,25 +138,49 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
                             int elapsed = comm.get_song().getCurrentPosition() / 1000;
                             int remaining = (comm.get_song().getDuration() - comm.get_song().getCurrentPosition()) / 1000;
                             tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
-                            tvRemaining.setText("-" + get_minutes(remaining) + ":" + get_seconds(remaining));
+                            tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
                         }
                     });
+                } else {
+                    //Blinking effect on pause.
+                    if (tvElapsed.getVisibility() == View.VISIBLE) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvElapsed.setVisibility(View.INVISIBLE);
+                                tvRemaining.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                    } else if (tvElapsed.getVisibility() == View.INVISIBLE) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvElapsed.setVisibility(View.VISIBLE);
+                                tvRemaining.setVisibility(View.VISIBLE);
+                            }
+                        });
+                    }
                 }
                 if (isCancelled()) break;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             return null;
         }
+    }
 
-        String get_minutes(int secs) {
-            if ((secs / 60) < 10)
-                return "0" + String.valueOf(secs / 60);
-            return String.valueOf(secs / 60);
-        }
+    String get_minutes(int secs) {
+        if ((secs / 60) < 10)
+            return "0" + String.valueOf(secs / 60);
+        return String.valueOf(secs / 60);
+    }
 
-        String get_seconds(int secs) {
-            if ((secs % 60) < 10)
-                return "0" + String.valueOf(secs % 60);
-            return String.valueOf(secs % 60);
-        }
+    String get_seconds(int secs) {
+        if ((secs % 60) < 10)
+            return "0" + String.valueOf(secs % 60);
+        return String.valueOf(secs % 60);
     }
 }

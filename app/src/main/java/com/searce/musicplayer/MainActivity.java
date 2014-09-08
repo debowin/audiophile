@@ -6,9 +6,12 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,16 +29,16 @@ interface Communicator{
 
     ArrayList<File> get_song_list();
 
-    public void set_song_list(ArrayList<File> songs);
-
     MediaPlayer get_song();
 
     void set_progress(int i);
 
     void set_volume(float vol);
+
+    void goToPlayer();
 }
 
-public class MainActivity extends Activity implements Communicator{
+public class MainActivity extends Activity implements Communicator, MediaPlayer.OnCompletionListener {
     PlayerFragment playerFrag;
     AlbumArtFragment artFrag;
     TitleFrag titleFrag;
@@ -62,7 +65,8 @@ public class MainActivity extends Activity implements Communicator{
             categoryFragment = new CategoryFragment();
             miniPlayerFragment = new MiniPlayerFragment();
             songVol = 0.5f;
-            show_list();
+            song.setOnCompletionListener(this);
+            new AsyncFileScan().execute();
         }
     }
 
@@ -224,10 +228,6 @@ public class MainActivity extends Activity implements Communicator{
         return songFiles;
     }
 
-    @Override
-    public void set_song_list(ArrayList<File> songs) {
-        songFiles = songs;
-    }
 
     @Override
     public MediaPlayer get_song() {
@@ -241,10 +241,20 @@ public class MainActivity extends Activity implements Communicator{
 
     @Override
     public void set_volume(float vol) {
-        if (vol < 0)
-            song.setVolume(songVol, songVol);
-        else
-            song.setVolume(vol, vol);
+        song.setVolume(vol, vol);
+    }
+
+    @Override
+    public void goToPlayer() {
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.remove(categoryFragment);
+        transaction.remove(songListFragment);
+        transaction.remove(miniPlayerFragment);
+
+        transaction.add(R.id.container, playerFrag);
+        transaction.add(R.id.container, artFrag);
+        transaction.add(R.id.container, titleFrag);
+        transaction.commit();
     }
 
     @Override
@@ -252,5 +262,45 @@ public class MainActivity extends Activity implements Communicator{
         song.release();
         finish();
         super.onStop();
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+        //Auto switch to next song on completion
+        nextSong();
+    }
+
+    public void filewalker(File dir) {
+        String mp3Pattern = ".mp3";
+
+        File[] listFile = dir.listFiles();
+
+        if (listFile != null) {
+            for (File aListFile : listFile) {
+
+                if (aListFile.isDirectory()) {
+                    filewalker(aListFile);
+                } else {
+                    if (aListFile.getName().endsWith(mp3Pattern)) {
+                        //Add files to list
+                        songFiles.add(aListFile);
+                    }
+                }
+            }
+        }
+    }
+
+    public class AsyncFileScan extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            filewalker(new File("/storage/sdcard1/"));
+//            filewalker(Environment.getExternalStorageDirectory());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            show_list();
+        }
     }
 }
