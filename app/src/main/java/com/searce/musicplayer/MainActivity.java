@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.media.MediaMetadataEditor;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +30,7 @@ interface Communicator{
 
     public void show_list();
 
-    ArrayList<File> get_song_list();
+    ArrayList<String> get_song_list();
 
     MediaPlayer get_song();
 
@@ -36,6 +39,14 @@ interface Communicator{
     void set_volume(float vol);
 
     void goToPlayer();
+
+    String get_artist();
+
+    String get_album();
+
+    String get_title();
+
+    byte[] get_album_art();
 }
 
 public class MainActivity extends Activity implements Communicator, MediaPlayer.OnCompletionListener {
@@ -43,10 +54,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     AlbumArtFragment artFrag;
     TitleFrag titleFrag;
     SongListFragment songListFragment;
-    CategoryFragment categoryFragment;
     MiniPlayerFragment miniPlayerFragment;
-    ArrayList<File> songFiles;
+    ArrayList<String> songFiles;
     MediaPlayer song;
+    MediaMetadataRetriever meta_getter;
     int songId;
     float songVol;
 
@@ -56,17 +67,18 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         if (savedInstanceState == null) {
-            songFiles = new ArrayList<File>();
             song = new MediaPlayer();
             playerFrag = new PlayerFragment();
             artFrag = new AlbumArtFragment();
             titleFrag = new TitleFrag();
             songListFragment = new SongListFragment();
-            categoryFragment = new CategoryFragment();
             miniPlayerFragment = new MiniPlayerFragment();
+            meta_getter = new MediaMetadataRetriever();
             songVol = 0.5f;
             song.setOnCompletionListener(this);
-            new AsyncFileScan().execute();
+            songId = 0;
+            songFiles = getIntent().getStringArrayListExtra("songs");
+            show_list();
         }
     }
 
@@ -110,16 +122,16 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     public void playback_mode(int id, boolean status) {
         switch(id){
             case R.id.tbRep:
-                if(status == true)
-                    titleFrag.changeTitle("Repeat Enabled");
+                if (status)
+                    Toast.makeText(getBaseContext(), "Repeat Enabled", Toast.LENGTH_SHORT).show();
                 else
-                    titleFrag.changeTitle("Repeat Disabled");
+                    Toast.makeText(getBaseContext(), "Repeat Disabled", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.tbShuf:
-                if(status == true)
-                    titleFrag.changeTitle("Shuffle Enabled");
+                if (status)
+                    Toast.makeText(getBaseContext(), "Shuffle Enabled", Toast.LENGTH_SHORT).show();
                 else
-                    titleFrag.changeTitle("Shuffle Disabled");
+                    Toast.makeText(getBaseContext(), "Shuffle Disabled", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -147,7 +159,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             return;
         }
         songId -= 1;
-        String filename = songFiles.get(songId).toString();
+        titleFrag.updateTags();
+        miniPlayerFragment.updateTags();
+        artFrag.updateAlbumArt();
+        String filename = songFiles.get(songId);
         try {
             song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
@@ -164,7 +179,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             return;
         //TODO: If on repeat, start playing again
         songId += 1;
-        String filename = songFiles.get(songId).toString();
+        titleFrag.updateTags();
+        miniPlayerFragment.updateTags();
+        artFrag.updateAlbumArt();
+        String filename = songFiles.get(songId);
         try {
             song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
@@ -189,9 +207,8 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     @Override
     public void open_song(int position) {
         songId = position;
-        String filename = songFiles.get(songId).toString();
+        String filename = songFiles.get(songId);
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(categoryFragment);
         transaction.remove(songListFragment);
         transaction.remove(miniPlayerFragment);
 
@@ -216,15 +233,14 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         transaction.remove(playerFrag);
         transaction.remove(artFrag);
         transaction.remove(titleFrag);
-        transaction.add(R.id.container, categoryFragment);
+
         transaction.add(R.id.container, songListFragment);
         transaction.add(R.id.container, miniPlayerFragment);
-
         transaction.commit();
     }
 
     @Override
-    public ArrayList<File> get_song_list() {
+    public ArrayList<String> get_song_list() {
         return songFiles;
     }
 
@@ -247,7 +263,6 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     @Override
     public void goToPlayer() {
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(categoryFragment);
         transaction.remove(songListFragment);
         transaction.remove(miniPlayerFragment);
 
@@ -255,6 +270,42 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         transaction.add(R.id.container, artFrag);
         transaction.add(R.id.container, titleFrag);
         transaction.commit();
+    }
+
+    @Override
+    public String get_artist() {
+        meta_getter.setDataSource(songFiles.get(songId));
+        String artist = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        if (artist == null) {
+            return "Unknown Artist";
+        } else
+            return artist;
+    }
+
+    @Override
+    public String get_album() {
+        meta_getter.setDataSource(songFiles.get(songId));
+        String album = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+        if (album == null) {
+            return "Untitled Album";
+        } else
+            return album;
+    }
+
+    @Override
+    public String get_title() {
+        meta_getter.setDataSource(songFiles.get(songId));
+        String title = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        if (title == null) {
+            return new File(songFiles.get(songId)).getName();
+        } else
+            return title;
+    }
+
+    @Override
+    public byte[] get_album_art() {
+        meta_getter.setDataSource(songFiles.get(songId));
+        return meta_getter.getEmbeddedPicture();
     }
 
     @Override
@@ -270,37 +321,4 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         nextSong();
     }
 
-    public void filewalker(File dir) {
-        String mp3Pattern = ".mp3";
-
-        File[] listFile = dir.listFiles();
-
-        if (listFile != null) {
-            for (File aListFile : listFile) {
-
-                if (aListFile.isDirectory()) {
-                    filewalker(aListFile);
-                } else {
-                    if (aListFile.getName().endsWith(mp3Pattern)) {
-                        //Add files to list
-                        songFiles.add(aListFile);
-                    }
-                }
-            }
-        }
-    }
-
-    public class AsyncFileScan extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... voids) {
-            filewalker(new File("/storage/sdcard1/"));
-//            filewalker(Environment.getExternalStorageDirectory());
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            show_list();
-        }
-    }
 }

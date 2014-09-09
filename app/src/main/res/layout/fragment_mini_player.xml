@@ -14,8 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/tvSongTitle"
+        android:id="@+id/tvSongTitle_MiniPlayerFrag"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -25,9 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/tvArtist"
-        android:layout_below="@+id/tvSongTitle"
+        android:id="@+id/tvArtist_MiniPlayerFrag"
+        android:layout_below="@+id/tvSongTitle_MiniPlayerFrag"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:textColor="#ffffffff" />
@@ -40,13 +38,13 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         style="@android:style/MediaButton.Play"
-        android:layout_alignBottom="@+id/tvArtist" />
+        android:layout_alignBottom="@+id/tvArtist_MiniPlayerFrag" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#ffffffff"
-        android:layout_above="@+id/tvSongTitle"
+        android:layout_above="@+id/tvSongTitle_MiniPlayerFrag"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="10dp" />
 </RelativeLayout>

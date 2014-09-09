@@ -21,15 +21,14 @@ import java.util.ArrayList;
  * Created by debowin on 7/9/14.
  */
 public class SongListFragment extends Fragment implements AdapterView.OnItemClickListener {
-    ArrayList<File> songFiles;
-    ArrayAdapter<File> songAdapter;
+    ArrayList<String> songFiles;
+    ArrayAdapter<String> songAdapter;
     ListView lvSongs;
     Communicator comm;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_songlist, container, false);
-        songFiles = new ArrayList<File>();
         return v;
     }
 
@@ -41,7 +40,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         lvSongs.setOnItemClickListener(this);
 
         songFiles = comm.get_song_list();
-        songAdapter = new ArrayAdapter<File>(getActivity().getBaseContext(), R.layout.list_item_song, songFiles);
+        songAdapter = new ArrayAdapter<String>(getActivity().getBaseContext(), R.layout.list_item_song, songFiles);
         lvSongs.setAdapter(songAdapter);
         Log.e("MP3 files found...", String.valueOf(songFiles.size()));
     }
