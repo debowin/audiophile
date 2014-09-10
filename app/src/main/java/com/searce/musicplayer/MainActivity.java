@@ -51,8 +51,6 @@ interface Communicator{
 
 public class MainActivity extends Activity implements Communicator, MediaPlayer.OnCompletionListener {
     PlayerFragment playerFrag;
-    AlbumArtFragment artFrag;
-    TitleFrag titleFrag;
     SongListFragment songListFragment;
     MiniPlayerFragment miniPlayerFragment;
     ArrayList<String> songFiles;
@@ -69,8 +67,6 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         if (savedInstanceState == null) {
             song = new MediaPlayer();
             playerFrag = new PlayerFragment();
-            artFrag = new AlbumArtFragment();
-            titleFrag = new TitleFrag();
             songListFragment = new SongListFragment();
             miniPlayerFragment = new MiniPlayerFragment();
             meta_getter = new MediaMetadataRetriever();
@@ -78,6 +74,12 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             song.setOnCompletionListener(this);
             songId = 0;
             songFiles = getIntent().getStringArrayListExtra("songs");
+            try {
+                song.setDataSource(getBaseContext(), Uri.parse(songFiles.get(songId)));
+                song.prepare();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             show_list();
         }
     }
@@ -147,6 +149,8 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             case R.id.bPrev:
                 prevSong();
                 break;
+            case R.id.bBrowse:
+                show_list();
         }
     }
 
@@ -159,16 +163,15 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             return;
         }
         songId -= 1;
-        titleFrag.updateTags();
+        playerFrag.updateTags();
         miniPlayerFragment.updateTags();
-        artFrag.updateAlbumArt();
+        playerFrag.updateAlbumArt();
         String filename = songFiles.get(songId);
         try {
             song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
             song.prepare();
             song.start();
-            playerFrag.playPause("play");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -179,16 +182,15 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             return;
         //TODO: If on repeat, start playing again
         songId += 1;
-        titleFrag.updateTags();
+        playerFrag.updateTags();
         miniPlayerFragment.updateTags();
-        artFrag.updateAlbumArt();
+        playerFrag.updateAlbumArt();
         String filename = songFiles.get(songId);
         try {
             song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
             song.prepare();
             song.start();
-            playerFrag.playPause("play");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -196,10 +198,8 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
 
     private void togglePlayPause() {
         if (song.isPlaying()) {
-            playerFrag.playPause("pause");
             song.pause();
         } else {
-            playerFrag.playPause("play");
             song.start();
         }
     }
@@ -209,12 +209,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         songId = position;
         String filename = songFiles.get(songId);
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(songListFragment);
         transaction.remove(miniPlayerFragment);
+        transaction.remove(songListFragment);
 
         transaction.add(R.id.container, playerFrag);
-        transaction.add(R.id.container, artFrag);
-        transaction.add(R.id.container, titleFrag);
         transaction.commit();
         try {
             song.reset();
@@ -231,8 +229,6 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.remove(playerFrag);
-        transaction.remove(artFrag);
-        transaction.remove(titleFrag);
 
         transaction.add(R.id.container, songListFragment);
         transaction.add(R.id.container, miniPlayerFragment);
@@ -263,12 +259,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     @Override
     public void goToPlayer() {
         FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(songListFragment);
         transaction.remove(miniPlayerFragment);
+        transaction.remove(songListFragment);
 
         transaction.add(R.id.container, playerFrag);
-        transaction.add(R.id.container, artFrag);
-        transaction.add(R.id.container, titleFrag);
         transaction.commit();
     }
 
@@ -276,7 +270,7 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     public String get_artist() {
         meta_getter.setDataSource(songFiles.get(songId));
         String artist = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        if (artist == null) {
+        if (artist == null || artist.contentEquals("")) {
             return "Unknown Artist";
         } else
             return artist;
@@ -286,7 +280,7 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     public String get_album() {
         meta_getter.setDataSource(songFiles.get(songId));
         String album = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-        if (album == null) {
+        if (album == null || album.contentEquals("")) {
             return "Untitled Album";
         } else
             return album;
@@ -296,8 +290,9 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     public String get_title() {
         meta_getter.setDataSource(songFiles.get(songId));
         String title = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-        if (title == null) {
-            return new File(songFiles.get(songId)).getName();
+        if (title == null || title.contentEquals("")) {
+            String fake_title = new File(songFiles.get(songId)).getName();
+            return fake_title.substring(0,fake_title.length()-4);
         } else
             return title;
     }

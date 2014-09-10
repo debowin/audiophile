@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="0px"
-    android:layout_weight="180"
+    android:layout_weight="185"
     android:background="#ff000000">
 
     <ListView

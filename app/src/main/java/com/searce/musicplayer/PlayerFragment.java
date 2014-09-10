@@ -1,15 +1,18 @@
 package com.searce.musicplayer;
 
 import android.app.Fragment;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -19,9 +22,14 @@ import android.widget.ToggleButton;
  */
 public class PlayerFragment extends Fragment implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, SeekBar.OnSeekBarChangeListener {
     Button bPlay, bPrev, bNext;
+    ImageView ivAlbumArt;
     ToggleButton tbRep, tbShuf;
     SeekBar seekBar;
     TextView tvElapsed, tvRemaining;
+    TextView tvTitle;
+    TextView tvAlbum;
+    TextView tvArtist;
+    Button bList;
     Communicator comm;
     AsyncPlay asyncPlay;
     int new_progress;
@@ -45,12 +53,23 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         seekBar = (SeekBar) getActivity().findViewById(R.id.sbTime);
         tvElapsed = (TextView) getActivity().findViewById(R.id.tvElapsed);
         tvRemaining = (TextView) getActivity().findViewById(R.id.tvRemaining);
+        tvTitle = (TextView) getActivity().findViewById(R.id.tvSongTitle_TitleFrag);
+        tvAlbum = (TextView) getActivity().findViewById(R.id.tvAlbum_TitleFrag);
+        tvArtist = (TextView) getActivity().findViewById(R.id.tvArtist_TitleFrag);
+        bList = (Button) getActivity().findViewById(R.id.bBrowse);
+        ivAlbumArt = (ImageView) getActivity().findViewById(R.id.ivAlbumArt);
+        bList.setOnClickListener(this);
         bPlay.setOnClickListener(this);
         bPrev.setOnClickListener(this);
         bNext.setOnClickListener(this);
         tbRep.setOnCheckedChangeListener(this);
         tbShuf.setOnCheckedChangeListener(this);
         seekBar.setOnSeekBarChangeListener(this);
+        tvTitle.setSelected(true);
+        tvAlbum.setSelected(true);
+        tvArtist.setSelected(true);
+        updateAlbumArt();
+        updateTags();
         asyncPlay = new AsyncPlay();
         asyncPlay.execute();
         if (!comm.get_song().isPlaying()) {
@@ -71,10 +90,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     @Override
     public void onClick(View v) {
         comm.song_operations(v.getId());
-    }
-
-    public void playPause(String status) {
-        if (status.contentEquals("play"))
+        if(comm.get_song().isPlaying())
             bPlay.setBackgroundResource(R.drawable.custom_pause);
         else
             bPlay.setBackgroundResource(R.drawable.custom_play);
@@ -182,5 +198,18 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         if ((secs % 60) < 10)
             return "0" + String.valueOf(secs % 60);
         return String.valueOf(secs % 60);
+    }
+
+    public void updateAlbumArt() {
+        byte[] bytes = comm.get_album_art();
+        if (bytes == null)
+            ivAlbumArt.setImageDrawable(getResources().getDrawable(R.drawable.splash));
+        else
+            ivAlbumArt.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+    }
+    public void updateTags() {
+        tvTitle.setText(comm.get_title());
+        tvAlbum.setText(comm.get_album());
+        tvArtist.setText(comm.get_artist());
     }
 }

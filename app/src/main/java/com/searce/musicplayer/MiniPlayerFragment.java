@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -17,6 +19,7 @@ public class MiniPlayerFragment extends Fragment implements View.OnClickListener
     RelativeLayout rlMiniPlayer;
     TextView tvSongTitle;
     TextView tvArtist;
+    Button bPlayPause;
     Communicator comm;
 
     @Override
@@ -31,8 +34,18 @@ public class MiniPlayerFragment extends Fragment implements View.OnClickListener
         rlMiniPlayer = (RelativeLayout) getActivity().findViewById(R.id.rlPlayer);
         tvSongTitle = (TextView) getActivity().findViewById(R.id.tvSongTitle_MiniPlayerFrag);
         tvArtist = (TextView) getActivity().findViewById(R.id.tvArtist_MiniPlayerFrag);
+        bPlayPause = (Button) getActivity().findViewById(R.id.bPlay_MiniPlayerFrag);
         rlMiniPlayer.setOnClickListener(this);
+        tvSongTitle.setSelected(true);
+        tvArtist.setSelected(true);
+        bPlayPause.setOnClickListener(this);
         comm = (Communicator) getActivity();
+        if(comm.get_song().isPlaying()){
+            bPlayPause.setBackgroundResource(android.R.drawable.ic_media_pause);
+        }
+        else{
+            bPlayPause.setBackgroundResource(android.R.drawable.ic_media_play);
+        }
         updateTags();
     }
 
@@ -46,6 +59,16 @@ public class MiniPlayerFragment extends Fragment implements View.OnClickListener
         switch (view.getId()) {
             case R.id.rlPlayer:
                 comm.goToPlayer();
+                break;
+            case R.id.bPlay_MiniPlayerFrag:
+                comm.song_operations(R.id.bPlay);
+                if(comm.get_song().isPlaying()){
+                    bPlayPause.setBackgroundResource(android.R.drawable.ic_media_pause);
+                }
+                else{
+                    bPlayPause.setBackgroundResource(android.R.drawable.ic_media_play);
+                }
+                break;
         }
     }
 }
