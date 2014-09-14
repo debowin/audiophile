@@ -28,8 +28,6 @@ interface Communicator{
 
     public void open_song(int position);
 
-    public void show_list();
-
     ArrayList<String> get_song_list();
 
     MediaPlayer get_song();
@@ -47,6 +45,14 @@ interface Communicator{
     String get_title();
 
     byte[] get_album_art();
+
+    int get_song_id();
+
+    ArrayList<String> get_song_durations();
+
+    ArrayList<String> get_song_artists();
+
+    ArrayList<String> get_song_titles();
 }
 
 public class MainActivity extends Activity implements Communicator, MediaPlayer.OnCompletionListener {
@@ -54,6 +60,9 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     SongListFragment songListFragment;
     MiniPlayerFragment miniPlayerFragment;
     ArrayList<String> songFiles;
+    ArrayList<String> songTitles;
+    ArrayList<String> songArtists;
+    ArrayList<String> songDurations;
     MediaPlayer song;
     MediaMetadataRetriever meta_getter;
     int songId;
@@ -73,7 +82,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             songVol = 0.5f;
             song.setOnCompletionListener(this);
             songId = 0;
-            songFiles = getIntent().getStringArrayListExtra("songs");
+            songFiles = getIntent().getStringArrayListExtra("songs_paths");
+            songTitles = getIntent().getStringArrayListExtra("songs_titles");
+            songArtists = getIntent().getStringArrayListExtra("songs_artists");
+            songDurations = getIntent().getStringArrayListExtra("songs_durations");
             try {
                 song.setDataSource(getBaseContext(), Uri.parse(songFiles.get(songId)));
                 song.prepare();
@@ -182,9 +194,11 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             return;
         //TODO: If on repeat, start playing again
         songId += 1;
-        playerFrag.updateTags();
-        miniPlayerFragment.updateTags();
-        playerFrag.updateAlbumArt();
+        if (playerFrag.isVisible()) {
+            playerFrag.updateAlbumArt();
+            playerFrag.updateTags();
+        } else if (miniPlayerFragment.isVisible())
+            miniPlayerFragment.updateTags();
         String filename = songFiles.get(songId);
         try {
             song.reset();
@@ -224,7 +238,6 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         }
     }
 
-    @Override
     public void show_list() {
         manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
@@ -301,6 +314,26 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     public byte[] get_album_art() {
         meta_getter.setDataSource(songFiles.get(songId));
         return meta_getter.getEmbeddedPicture();
+    }
+
+    @Override
+    public int get_song_id() {
+        return songId;
+    }
+
+    @Override
+    public ArrayList<String> get_song_durations() {
+        return songDurations;
+    }
+
+    @Override
+    public ArrayList<String> get_song_artists() {
+        return songArtists;
+    }
+
+    @Override
+    public ArrayList<String> get_song_titles() {
+        return songTitles;
     }
 
     @Override

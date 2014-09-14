@@ -34,9 +34,10 @@
     <TextView
         android:id="@+id/tvSongTitle_TitleFrag"
         android:gravity="center"
-        android:layout_width="240dp"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
         android:ellipsize="marquee"
+        android:focusableInTouchMode="true"
         android:scrollHorizontally="true"
         android:lines="1"
         android:singleLine="true"
@@ -51,8 +52,9 @@
     <TextView
         android:id="@+id/tvAlbum_TitleFrag"
         android:gravity="center"
-        android:layout_width="240dp"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
         android:ellipsize="marquee"
         android:scrollHorizontally="true"
         android:lines="1"
@@ -67,8 +69,9 @@
     <TextView
         android:id="@+id/tvArtist_TitleFrag"
         android:gravity="center"
-        android:layout_width="240dp"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
         android:ellipsize="marquee"
         android:scrollHorizontally="true"
         android:lines="1"

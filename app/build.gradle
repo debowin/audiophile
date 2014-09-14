@@ -1,9 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+        }
+    }
     compileSdkVersion 20
     buildToolsVersion "20.0.0"
-
     defaultConfig {
         applicationId "com.searce.musicplayer"
         minSdkVersion 16
