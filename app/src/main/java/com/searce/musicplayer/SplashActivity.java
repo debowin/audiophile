@@ -2,18 +2,23 @@ package com.searce.musicplayer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.StatFs;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -28,32 +33,72 @@ public class SplashActivity extends Activity{
     ArrayList<String> songTitles;
     ArrayList<String> songArtists;
     ArrayList<String> songDurations;
-    int numFiles;
+    int numFilesFound;
+    File listfile;
     boolean exited;
+    boolean noneed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean rescan = getIntent().getBooleanExtra("rescan", false);
         setContentView(R.layout.activity_splash);
         getActionBar().hide();
         pbLoading = (ProgressBar)findViewById(R.id.pbLoading);
         tvFound = (TextView) findViewById(R.id.tvFound);
         showSplash = true;
-        numFiles = 0;
+        numFilesFound = 0;
         exited = false;
         songFiles = new ArrayList<String>();
         songTitles = new ArrayList<String>();
         songArtists = new ArrayList<String>();
         songDurations = new ArrayList<String>();
         tvFound.setText("Found no files so far...");
+        noneed = false;
+        if (rescan) {
+            new AsyncFileScan().execute();
+            return;
+        }
+        //Try to fetch results from Internal Storage.
+        try {
+            listfile = new File(getBaseContext().getFilesDir(), "listfile");
+            FileInputStream fis = new FileInputStream(listfile);
+            DataInputStream dis = new DataInputStream(fis);
+            int lines = dis.readInt();
+            for (int i = 0; i < lines; i++) {
+                String line = dis.readUTF();
+                songFiles.add(line);
+            }
+            for (int i = 0; i < lines; i++) {
+                String line = dis.readUTF();
+                songTitles.add(line);
+            }
+            for (int i = 0; i < lines; i++) {
+                String line = dis.readUTF();
+                songArtists.add(line);
+            }
+            for (int i = 0; i < lines; i++) {
+                String line = dis.readUTF();
+                songDurations.add(line);
+            }
+            dis.close();
+            fis.close();
+            noneed = true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         new AsyncFileScan().execute();
     }
 
     public class AsyncFileScan extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
+            if (noneed)
+                return null;
             filewalker(new File("/storage/sdcard1"));
-//            filewalker(Environment.getExternalStorageDirectory());
+//            filewalker(Environment.getExternalStorageDirectory().getParent());
             return null;
         }
 
@@ -61,6 +106,32 @@ public class SplashActivity extends Activity{
         protected void onPostExecute(Void aVoid) {
             if (exited)
                 return;
+            //Store results into Internal Storage.
+            try {
+                listfile = new File(getBaseContext().getFilesDir(), "listfile");
+                FileOutputStream fos = new FileOutputStream(listfile);
+                DataOutputStream dos = new DataOutputStream(fos);
+                dos.writeInt(songFiles.size());
+                for (String songFile : songFiles) {
+                    dos.writeUTF(songFile);
+                }
+                for (String songTitle : songTitles) {
+                    dos.writeUTF(songTitle);
+                }
+                for (String songArtist : songArtists) {
+                    dos.writeUTF(songArtist);
+                }
+                for (String songDuration : songDurations) {
+                    dos.writeUTF(songDuration);
+                }
+                dos.flush();
+                dos.close();
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             Intent startPlayer = new Intent(getBaseContext(), MainActivity.class);
             startPlayer.putStringArrayListExtra("songs_paths", songFiles);
             startPlayer.putStringArrayListExtra("songs_titles", songTitles);
@@ -111,7 +182,7 @@ public class SplashActivity extends Activity{
                         songTitles.add(title);
                         songArtists.add(artist);
                         songDurations.add(minutes + ":" + seconds);
-                        numFiles++;
+                        numFilesFound++;
                         try {
                             Thread.sleep(1);
                         } catch (InterruptedException e) {
@@ -120,7 +191,7 @@ public class SplashActivity extends Activity{
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                tvFound.setText("Found " + numFiles + " files so far...");
+                                tvFound.setText("Found " + numFilesFound + " files so far...");
                             }
                         });
                     }

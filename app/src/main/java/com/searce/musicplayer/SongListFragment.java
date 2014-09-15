@@ -122,9 +122,14 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 //                Log.e("Awesome","Got the view.");
                 viewHolder = (ViewHolderItem) view.getTag();
             }
-
-            viewHolder.titleHolder.setText(titles.get(i));
-            viewHolder.artistHolder.setText(artists.get(i));
+            if (titles.get(i).length() > 25)
+                viewHolder.titleHolder.setText(titles.get(i).substring(0, 25) + "...");
+            else
+                viewHolder.titleHolder.setText(titles.get(i));
+            if (artists.get(i).length() > 35)
+                viewHolder.artistHolder.setText(artists.get(i).substring(0, 35) + "...");
+            else
+                viewHolder.artistHolder.setText(artists.get(i));
             viewHolder.durationHolder.setText(durations.get(i));
             if (paths.get(i).contentEquals(songFiles.get(songId))) {
                 viewHolder.imageHolder.setImageResource(R.drawable.playing_icon);

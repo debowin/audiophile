@@ -86,13 +86,20 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             songTitles = getIntent().getStringArrayListExtra("songs_titles");
             songArtists = getIntent().getStringArrayListExtra("songs_artists");
             songDurations = getIntent().getStringArrayListExtra("songs_durations");
-            try {
-                song.setDataSource(getBaseContext(), Uri.parse(songFiles.get(songId)));
-                song.prepare();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            loadFirstSong();
             show_list();
+        }
+    }
+
+    private void loadFirstSong() {
+        try {
+            song.setDataSource(getBaseContext(), Uri.parse(songFiles.get(songId)));
+            song.prepare();
+        } catch (IOException e) {
+            Toast.makeText(getBaseContext(), new File(songFiles.get(songId)).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            songId += 1;
+            loadFirstSong();
         }
     }
 
@@ -120,6 +127,11 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             case R.id.action_search:
                 break;
             case R.id.action_settings:
+                break;
+            case R.id.action_rescan:
+                Intent rescan = new Intent(MainActivity.this, SplashActivity.class);
+                rescan.putExtra("rescan", true);
+                startActivity(rescan);
                 break;
             case R.id.action_about:
                 Intent about = new Intent(MainActivity.this,About.class);
@@ -167,46 +179,49 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     }
 
     private void prevSong() {
-        if (songId == 0)
-            return;
-        //TODO: If on repeat, start playing again
         if (song.getCurrentPosition() > 3000) {
             song.seekTo(0);
             return;
         }
         songId -= 1;
-        playerFrag.updateTags();
-        miniPlayerFragment.updateTags();
-        playerFrag.updateAlbumArt();
+        if (songId < 0)
+            songId += songFiles.size();
         String filename = songFiles.get(songId);
         try {
             song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
             song.prepare();
             song.start();
+            if (playerFrag.isVisible()) {
+                playerFrag.updateAlbumArt();
+                playerFrag.updateTags();
+            } else if (miniPlayerFragment.isVisible())
+                miniPlayerFragment.updateTags();
         } catch (IOException e) {
+            Toast.makeText(getBaseContext(), new File(filename).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+            prevSong();
         }
     }
 
     private void nextSong() {
-        if (songId + 1 == songFiles.size())
-            return;
-        //TODO: If on repeat, start playing again
         songId += 1;
-        if (playerFrag.isVisible()) {
-            playerFrag.updateAlbumArt();
-            playerFrag.updateTags();
-        } else if (miniPlayerFragment.isVisible())
-            miniPlayerFragment.updateTags();
+        songId %= songFiles.size();
         String filename = songFiles.get(songId);
         try {
             song.reset();
             song.setDataSource(getBaseContext(), Uri.parse(filename));
             song.prepare();
             song.start();
+            if (playerFrag.isVisible()) {
+                playerFrag.updateAlbumArt();
+                playerFrag.updateTags();
+            } else if (miniPlayerFragment.isVisible())
+                miniPlayerFragment.updateTags();
         } catch (IOException e) {
+            Toast.makeText(getBaseContext(), new File(filename).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+            nextSong();
         }
     }
 
@@ -234,7 +249,9 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             song.prepare();
             song.start();
         } catch (IOException e) {
+            Toast.makeText(getBaseContext(), new File(songFiles.get(songId)).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+            nextSong();
         }
     }
 
@@ -281,6 +298,9 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
 
     @Override
     public String get_artist() {
+        if (!new File(songFiles.get(songId)).exists()) {
+            return "";
+        }
         meta_getter.setDataSource(songFiles.get(songId));
         String artist = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         if (artist == null || artist.contentEquals("")) {
@@ -291,6 +311,9 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
 
     @Override
     public String get_album() {
+        if (!new File(songFiles.get(songId)).exists()) {
+            return "";
+        }
         meta_getter.setDataSource(songFiles.get(songId));
         String album = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
         if (album == null || album.contentEquals("")) {
@@ -301,6 +324,9 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
 
     @Override
     public String get_title() {
+        if (!new File(songFiles.get(songId)).exists()) {
+            return "";
+        }
         meta_getter.setDataSource(songFiles.get(songId));
         String title = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if (title == null || title.contentEquals("")) {

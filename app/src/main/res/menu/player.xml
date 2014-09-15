@@ -10,10 +10,16 @@
         android:title="@string/action_settings"
         android:icon="@drawable/settings"
         android:orderInCategory="2"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_rescan"
+        android:title="Rescan"
+        android:icon="@drawable/refresh"
+        android:orderInCategory="3"
         android:showAsAction="always" />
     <item android:id="@+id/action_about"
         android:title="About"
-        android:orderInCategory="3"
+        android:orderInCategory="4"
         android:showAsAction="never" />
     <item android:id="@+id/action_exit"
         android:title="Exit"
