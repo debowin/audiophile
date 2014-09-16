@@ -3,6 +3,7 @@ package com.searce.musicplayer;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.PathMeasure;
+import android.graphics.Typeface;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -28,10 +29,7 @@ import java.util.ArrayList;
  * Created by debowin on 7/9/14.
  */
 public class SongListFragment extends Fragment implements AdapterView.OnItemClickListener {
-    ArrayList<String> songFiles;
-    ArrayList<String> songTitles;
-    ArrayList<String> songArtists;
-    ArrayList<String> songDurations;
+    ArrayList<Song> songFiles;
     SongListAdapter songAdapter;
     ListView lvSongs;
     Communicator comm;
@@ -52,11 +50,8 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         lvSongs.setOnItemClickListener(this);
 
         songFiles = comm.get_song_list();
-        songTitles = comm.get_song_titles();
-        songArtists = comm.get_song_artists();
-        songDurations = comm.get_song_durations();
         songId = comm.get_song_id();
-        songAdapter = new SongListAdapter(songFiles, songTitles, songArtists, songDurations);
+        songAdapter = new SongListAdapter(songFiles);
         lvSongs.setAdapter(songAdapter);
         Log.e("MP3 files found...", String.valueOf(songFiles.size()));
     }
@@ -74,22 +69,16 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
     }
 
     public class SongListAdapter extends BaseAdapter {
-        ArrayList<String> paths;
-        ArrayList<String> titles;
-        ArrayList<String> artists;
-        ArrayList<String> durations;
+        ArrayList<Song> songs;
 
 
-        SongListAdapter(ArrayList<String> paths, ArrayList<String> titles, ArrayList<String> artists, ArrayList<String> durations) {
-            this.paths = paths;
-            this.titles = titles;
-            this.artists = artists;
-            this.durations = durations;
+        SongListAdapter(ArrayList<Song> songs) {
+            this.songs = songs;
         }
 
         @Override
         public int getCount() {
-            return paths.size();
+            return songs.size();
         }
 
         @Override
@@ -122,16 +111,17 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 //                Log.e("Awesome","Got the view.");
                 viewHolder = (ViewHolderItem) view.getTag();
             }
-            if (titles.get(i).length() > 25)
-                viewHolder.titleHolder.setText(titles.get(i).substring(0, 25) + "...");
+            if (songs.get(i).getTitle().length() > 25)
+                viewHolder.titleHolder.setText(songs.get(i).getTitle().substring(0, 25) + "...");
             else
-                viewHolder.titleHolder.setText(titles.get(i));
-            if (artists.get(i).length() > 35)
-                viewHolder.artistHolder.setText(artists.get(i).substring(0, 35) + "...");
+                viewHolder.titleHolder.setText(songs.get(i).getTitle());
+            if (songs.get(i).getArtist().length() > 30)
+                viewHolder.artistHolder.setText(songs.get(i).getArtist().substring(0, 30) + "...");
             else
-                viewHolder.artistHolder.setText(artists.get(i));
-            viewHolder.durationHolder.setText(durations.get(i));
-            if (paths.get(i).contentEquals(songFiles.get(songId))) {
+                viewHolder.artistHolder.setText(songs.get(i).getArtist());
+            viewHolder.durationHolder.setText(songs.get(i).getDuration());
+
+            if (songs.get(i).getId() == songFiles.get(songId).getId()) {
                 viewHolder.imageHolder.setImageResource(R.drawable.playing_icon);
             } else
                 viewHolder.imageHolder.setImageResource(R.drawable.song_icon);

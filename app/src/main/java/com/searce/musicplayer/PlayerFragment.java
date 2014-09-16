@@ -70,6 +70,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tvArtist.setSelected(true);
         updateAlbumArt();
         updateTags();
+        setMaxDuration(comm.get_song().getDuration());
         asyncPlay = new AsyncPlay();
         asyncPlay.execute();
         if (!comm.get_song().isPlaying()) {
@@ -94,7 +95,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
             bPlay.setBackgroundResource(R.drawable.custom_pause);
         else
             bPlay.setBackgroundResource(R.drawable.custom_play);
-        seekBar.setMax(comm.get_song().getDuration());
     }
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -211,5 +211,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tvTitle.setText(comm.get_title());
         tvAlbum.setText(comm.get_album());
         tvArtist.setText(comm.get_artist());
+    }
+
+    public void setMaxDuration(int duration) {
+        seekBar.setMax(duration);
     }
 }

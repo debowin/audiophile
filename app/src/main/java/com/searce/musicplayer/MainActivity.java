@@ -28,7 +28,7 @@ interface Communicator{
 
     public void open_song(int position);
 
-    ArrayList<String> get_song_list();
+    ArrayList<Song> get_song_list();
 
     MediaPlayer get_song();
 
@@ -47,22 +47,13 @@ interface Communicator{
     byte[] get_album_art();
 
     int get_song_id();
-
-    ArrayList<String> get_song_durations();
-
-    ArrayList<String> get_song_artists();
-
-    ArrayList<String> get_song_titles();
 }
 
 public class MainActivity extends Activity implements Communicator, MediaPlayer.OnCompletionListener {
     PlayerFragment playerFrag;
     SongListFragment songListFragment;
     MiniPlayerFragment miniPlayerFragment;
-    ArrayList<String> songFiles;
-    ArrayList<String> songTitles;
-    ArrayList<String> songArtists;
-    ArrayList<String> songDurations;
+    ArrayList<Song> songFiles;
     MediaPlayer song;
     MediaMetadataRetriever meta_getter;
     int songId;
@@ -82,10 +73,7 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
             songVol = 0.5f;
             song.setOnCompletionListener(this);
             songId = 0;
-            songFiles = getIntent().getStringArrayListExtra("songs_paths");
-            songTitles = getIntent().getStringArrayListExtra("songs_titles");
-            songArtists = getIntent().getStringArrayListExtra("songs_artists");
-            songDurations = getIntent().getStringArrayListExtra("songs_durations");
+            songFiles = (ArrayList<Song>) getIntent().getSerializableExtra("songs");
             loadFirstSong();
             show_list();
         }
@@ -93,10 +81,10 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
 
     private void loadFirstSong() {
         try {
-            song.setDataSource(getBaseContext(), Uri.parse(songFiles.get(songId)));
+            song.setDataSource(getBaseContext(), songFiles.get(songId).getUri());
             song.prepare();
         } catch (IOException e) {
-            Toast.makeText(getBaseContext(), new File(songFiles.get(songId)).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             songId += 1;
             loadFirstSong();
@@ -186,19 +174,20 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         songId -= 1;
         if (songId < 0)
             songId += songFiles.size();
-        String filename = songFiles.get(songId);
+        Uri fileUri = songFiles.get(songId).getUri();
         try {
             song.reset();
-            song.setDataSource(getBaseContext(), Uri.parse(filename));
+            song.setDataSource(getBaseContext(), fileUri);
             song.prepare();
             song.start();
             if (playerFrag.isVisible()) {
                 playerFrag.updateAlbumArt();
                 playerFrag.updateTags();
+                playerFrag.setMaxDuration(song.getDuration());
             } else if (miniPlayerFragment.isVisible())
                 miniPlayerFragment.updateTags();
         } catch (IOException e) {
-            Toast.makeText(getBaseContext(), new File(filename).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             prevSong();
         }
@@ -207,19 +196,20 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     private void nextSong() {
         songId += 1;
         songId %= songFiles.size();
-        String filename = songFiles.get(songId);
+        Uri fileUri = songFiles.get(songId).getUri();
         try {
             song.reset();
-            song.setDataSource(getBaseContext(), Uri.parse(filename));
+            song.setDataSource(getBaseContext(), fileUri);
             song.prepare();
             song.start();
             if (playerFrag.isVisible()) {
                 playerFrag.updateAlbumArt();
                 playerFrag.updateTags();
+                playerFrag.setMaxDuration(song.getDuration());
             } else if (miniPlayerFragment.isVisible())
                 miniPlayerFragment.updateTags();
         } catch (IOException e) {
-            Toast.makeText(getBaseContext(), new File(filename).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             nextSong();
         }
@@ -236,7 +226,7 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     @Override
     public void open_song(int position) {
         songId = position;
-        String filename = songFiles.get(songId);
+        Uri fileUri = songFiles.get(songId).getUri();
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.remove(miniPlayerFragment);
         transaction.remove(songListFragment);
@@ -245,11 +235,11 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         transaction.commit();
         try {
             song.reset();
-            song.setDataSource(getBaseContext(), Uri.parse(filename));
+            song.setDataSource(getBaseContext(), fileUri);
             song.prepare();
             song.start();
         } catch (IOException e) {
-            Toast.makeText(getBaseContext(), new File(songFiles.get(songId)).getName() + " doesn't exist...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             nextSong();
         }
@@ -266,7 +256,7 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
     }
 
     @Override
-    public ArrayList<String> get_song_list() {
+    public ArrayList<Song> get_song_list() {
         return songFiles;
     }
 
@@ -298,68 +288,27 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
 
     @Override
     public String get_artist() {
-        if (!new File(songFiles.get(songId)).exists()) {
-            return "";
-        }
-        meta_getter.setDataSource(songFiles.get(songId));
-        String artist = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        if (artist == null || artist.contentEquals("")) {
-            return "Unknown Artist";
-        } else
-            return artist;
+        return songFiles.get(songId).getArtist();
     }
 
     @Override
     public String get_album() {
-        if (!new File(songFiles.get(songId)).exists()) {
-            return "";
-        }
-        meta_getter.setDataSource(songFiles.get(songId));
-        String album = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-        if (album == null || album.contentEquals("")) {
-            return "Untitled Album";
-        } else
-            return album;
+        return songFiles.get(songId).getAlbum();
     }
 
     @Override
     public String get_title() {
-        if (!new File(songFiles.get(songId)).exists()) {
-            return "";
-        }
-        meta_getter.setDataSource(songFiles.get(songId));
-        String title = meta_getter.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-        if (title == null || title.contentEquals("")) {
-            String fake_title = new File(songFiles.get(songId)).getName();
-            return fake_title.substring(0,fake_title.length()-4);
-        } else
-            return title;
+        return songFiles.get(songId).getTitle();
     }
 
     @Override
     public byte[] get_album_art() {
-        meta_getter.setDataSource(songFiles.get(songId));
-        return meta_getter.getEmbeddedPicture();
+        return songFiles.get(songId).getAlbum_Art(getBaseContext());
     }
 
     @Override
     public int get_song_id() {
         return songId;
-    }
-
-    @Override
-    public ArrayList<String> get_song_durations() {
-        return songDurations;
-    }
-
-    @Override
-    public ArrayList<String> get_song_artists() {
-        return songArtists;
-    }
-
-    @Override
-    public ArrayList<String> get_song_titles() {
-        return songTitles;
     }
 
     @Override

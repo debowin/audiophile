@@ -1,14 +1,18 @@
 package com.searce.musicplayer;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -20,6 +24,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -28,175 +34,119 @@ import java.util.ArrayList;
 public class SplashActivity extends Activity{
     ProgressBar pbLoading;
     TextView tvFound;
-    boolean showSplash;
-    ArrayList<String> songFiles;
-    ArrayList<String> songTitles;
-    ArrayList<String> songArtists;
-    ArrayList<String> songDurations;
+    ArrayList<Song> songFiles;
     int numFilesFound;
     File listfile;
+    String sortOrder;
     boolean exited;
-    boolean noneed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        boolean rescan = getIntent().getBooleanExtra("rescan", false);
         setContentView(R.layout.activity_splash);
         getActionBar().hide();
         pbLoading = (ProgressBar)findViewById(R.id.pbLoading);
         tvFound = (TextView) findViewById(R.id.tvFound);
-        showSplash = true;
         numFilesFound = 0;
-        exited = false;
-        songFiles = new ArrayList<String>();
-        songTitles = new ArrayList<String>();
-        songArtists = new ArrayList<String>();
-        songDurations = new ArrayList<String>();
+        songFiles = new ArrayList<Song>();
         tvFound.setText("Found no files so far...");
-        noneed = false;
-        if (rescan) {
-            new AsyncFileScan().execute();
-            return;
-        }
-        //Try to fetch results from Internal Storage.
+        exited = false;
+        sortOrder = MediaStore.Audio.Media.TITLE;
+        new AsyncContentResolve().execute();
+    }
+
+    private void read_data() {
         try {
             listfile = new File(getBaseContext().getFilesDir(), "listfile");
             FileInputStream fis = new FileInputStream(listfile);
-            DataInputStream dis = new DataInputStream(fis);
-            int lines = dis.readInt();
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            int lines = ois.readInt();
             for (int i = 0; i < lines; i++) {
-                String line = dis.readUTF();
-                songFiles.add(line);
+                Song song = (Song) ois.readObject();
+                songFiles.add(song);
             }
-            for (int i = 0; i < lines; i++) {
-                String line = dis.readUTF();
-                songTitles.add(line);
-            }
-            for (int i = 0; i < lines; i++) {
-                String line = dis.readUTF();
-                songArtists.add(line);
-            }
-            for (int i = 0; i < lines; i++) {
-                String line = dis.readUTF();
-                songDurations.add(line);
-            }
-            dis.close();
+            ois.close();
             fis.close();
-            noneed = true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void write_data() {
+        try {
+            listfile = new File(getBaseContext().getFilesDir(), "listfile");
+            FileOutputStream fos = new FileOutputStream(listfile);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeInt(songFiles.size());
+            for (Song song : songFiles) {
+                oos.writeObject(song);
+            }
+            oos.close();
+            fos.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        new AsyncFileScan().execute();
+
     }
 
-    public class AsyncFileScan extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... voids) {
-            if (noneed)
-                return null;
-            filewalker(new File("/storage/sdcard1"));
-//            filewalker(Environment.getExternalStorageDirectory().getParent());
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (exited)
-                return;
-            //Store results into Internal Storage.
-            try {
-                listfile = new File(getBaseContext().getFilesDir(), "listfile");
-                FileOutputStream fos = new FileOutputStream(listfile);
-                DataOutputStream dos = new DataOutputStream(fos);
-                dos.writeInt(songFiles.size());
-                for (String songFile : songFiles) {
-                    dos.writeUTF(songFile);
-                }
-                for (String songTitle : songTitles) {
-                    dos.writeUTF(songTitle);
-                }
-                for (String songArtist : songArtists) {
-                    dos.writeUTF(songArtist);
-                }
-                for (String songDuration : songDurations) {
-                    dos.writeUTF(songDuration);
-                }
-                dos.flush();
-                dos.close();
-                fos.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+    private void fetch_list() {
+        ContentResolver musicResolver = getContentResolver();
+        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        final Cursor musicCursor = musicResolver.query(musicUri, null, null, null, sortOrder);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                pbLoading.setMax(musicCursor.getCount());
             }
-            Intent startPlayer = new Intent(getBaseContext(), MainActivity.class);
-            startPlayer.putStringArrayListExtra("songs_paths", songFiles);
-            startPlayer.putStringArrayListExtra("songs_titles", songTitles);
-            startPlayer.putStringArrayListExtra("songs_artists", songArtists);
-            startPlayer.putStringArrayListExtra("songs_durations", songDurations);
-            startActivity(startPlayer);
-        }
-    }
+        });
 
-    public void filewalker(File dir) {
-        String mp3Pattern = ".mp3";
-        if (exited)
-            return;
-        File[] listFile = dir.listFiles();
-
-        if (listFile != null) {
-            for (File aListFile : listFile) {
-
-                if (aListFile.isDirectory()) {
-                    filewalker(aListFile);
-                } else {
-                    if (aListFile.getName().endsWith(mp3Pattern)) {
-                        //Add files to list
-                        songFiles.add(aListFile.getPath());
-                        //Add metas to list
-                        MediaMetadataRetriever mdr = new MediaMetadataRetriever();
-                        mdr.setDataSource(aListFile.getPath());
-                        String title = mdr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-                        if (title == null || title.contentEquals("")) {
-                            String fake_title = new File(aListFile.getPath()).getName();
-                            title = fake_title.substring(0, fake_title.length() - 4);
-                        }
-                        String artist = mdr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-                        if (artist == null || artist.contentEquals("")) {
-                            artist = "Unknown Artist";
-                        }
-
-                        int duration = MediaPlayer.create(getBaseContext(), Uri.parse(aListFile.getPath())).getDuration();
-                        String minutes = String.valueOf(duration / 60000);
-                        String seconds = String.valueOf((duration / 1000) % 60);
-                        if (minutes.length() == 1) {
-                            minutes = "0" + String.valueOf(minutes);
-                        }
-                        if (seconds.length() == 1) {
-                            seconds = "0" + String.valueOf(seconds);
-                        }
-
-                        songTitles.add(title);
-                        songArtists.add(artist);
-                        songDurations.add(minutes + ":" + seconds);
-                        numFilesFound++;
-                        try {
-                            Thread.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                tvFound.setText("Found " + numFilesFound + " files so far...");
-                            }
-                        });
+        if (musicCursor != null && musicCursor.moveToFirst()) {
+            //get columns
+            int titleColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.TITLE);
+            int idColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media._ID);
+            int artistColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.ARTIST);
+            int albumColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.ALBUM);
+            int durationColumn = musicCursor.getColumnIndex
+                    (MediaStore.Audio.Media.DURATION);
+            int displayNameColumn = musicCursor.getColumnIndex
+                    (String.valueOf(MediaStore.Audio.Media.DISPLAY_NAME));
+            //add songs to list
+            do {
+                long thisId = musicCursor.getLong(idColumn);
+                String thisTitle = musicCursor.getString(titleColumn);
+                String thisFileName = musicCursor.getString(displayNameColumn);
+                String thisArtist = musicCursor.getString(artistColumn);
+                String thisAlbum = musicCursor.getString(albumColumn);
+                String thisDuration = musicCursor.getString(durationColumn);
+                // Just for the heck of it, showing off the loading bar.
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                numFilesFound++;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvFound.setText("Found " + numFilesFound + " files so far...");
+                        pbLoading.setProgress(numFilesFound);
                     }
-                }
+                });
+                songFiles.add(new Song(thisId, thisTitle, thisFileName, thisArtist, thisAlbum, thisDuration));
+                if (exited)
+                    break;
             }
+            while (musicCursor.moveToNext());
         }
     }
 
@@ -205,5 +155,33 @@ public class SplashActivity extends Activity{
         exited = true;
         finish();
         super.onStop();
+    }
+
+    private class AsyncContentResolve extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+//            if (!rescan) {
+//                // Try to fetch results from Internal Storage.
+//                read_data();
+//            }
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (exited) {
+                return;
+            }
+            // Write results to Internal Storage for future usage.
+            //write_data();
+            Intent main = new Intent(getBaseContext(), MainActivity.class);
+            main.putExtra("songs", songFiles);
+            startActivity(main);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            fetch_list(); // Call to the content resolver.
+            return null;
+        }
     }
 }

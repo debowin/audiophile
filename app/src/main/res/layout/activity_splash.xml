@@ -13,21 +13,33 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Looking for songs..."
         android:id="@+id/tvLoading"
-        android:layout_gravity="center_horizontal"
-        android:textColor="#ffffffff" />
+        android:layout_gravity="center_horizontal|bottom"
+        android:textColor="#ffffffff"
+        android:gravity="bottom"
+        android:layout_above="@+id/pbLoading"
+        android:layout_centerHorizontal="true" />
 
-    <ProgressBar
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/pbLoading"
-        android:layout_gravity="center_horizontal" />
+        android:gravity="bottom">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tvFound"
-        android:layout_gravity="center_horizontal"
-        android:textColor="#ffffffff" />
+        <ProgressBar
+            style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:id="@+id/pbLoading"
+            android:progressDrawable="@drawable/custom_progressbar"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvFound"
+            android:layout_gravity="center_horizontal"
+            android:textColor="#ffffffff"
+            android:gravity="center" />
+
+    </RelativeLayout>
 
 </LinearLayout>

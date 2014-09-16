@@ -1,12 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".PlayerActivity" >
-    <item android:id="@+id/action_search"
+    tools:context=".PlayerActivity">
+    <item
+        android:id="@+id/action_search"
         android:title="Search"
         android:icon="@drawable/search"
         android:orderInCategory="1"
-        android:showAsAction="always" />
-    <item android:id="@+id/action_settings"
+        android:showAsAction="collapseActionView|ifRoom"
+        android:actionViewClass="android.widget.SearchView" />
+    <item
+        android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:icon="@drawable/settings"
         android:orderInCategory="2"
@@ -16,13 +19,15 @@
         android:title="Rescan"
         android:icon="@drawable/refresh"
         android:orderInCategory="3"
-        android:showAsAction="always" />
-    <item android:id="@+id/action_about"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_about"
         android:title="About"
         android:orderInCategory="4"
         android:showAsAction="never" />
-    <item android:id="@+id/action_exit"
+    <item
+        android:id="@+id/action_exit"
         android:title="Exit"
-        android:orderInCategory="4"
+        android:orderInCategory="5"
         android:showAsAction="never" />
 </menu>
