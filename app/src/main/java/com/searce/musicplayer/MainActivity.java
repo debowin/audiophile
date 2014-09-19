@@ -3,13 +3,19 @@ package com.searce.musicplayer;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.media.MediaMetadataEditor;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,8 +36,6 @@ interface Communicator{
 
     ArrayList<Song> get_song_list();
 
-    MediaPlayer get_song();
-
     void set_progress(int i);
 
     void set_volume(float vol);
@@ -47,16 +51,23 @@ interface Communicator{
     byte[] get_album_art();
 
     int get_song_id();
+
+    int get_duration();
+
+    int get_elapsed();
+
+    boolean is_playing();
 }
 
-public class MainActivity extends Activity implements Communicator, MediaPlayer.OnCompletionListener {
+public class MainActivity extends Activity implements Communicator {
     PlayerFragment playerFrag;
     SongListFragment songListFragment;
     MiniPlayerFragment miniPlayerFragment;
     ArrayList<Song> songFiles;
-    MediaPlayer song;
-    MediaMetadataRetriever meta_getter;
-    int songId;
+    private MusicService musicSvc;
+    private Intent playIntent;
+    private boolean musicBound = false;
+    private SongCompletedListener songCompletedListener;
     float songVol;
 
     FragmentManager manager;
@@ -65,31 +76,40 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         if (savedInstanceState == null) {
-            song = new MediaPlayer();
             playerFrag = new PlayerFragment();
             songListFragment = new SongListFragment();
             miniPlayerFragment = new MiniPlayerFragment();
-            meta_getter = new MediaMetadataRetriever();
             songVol = 0.5f;
-            song.setOnCompletionListener(this);
-            songId = 0;
             songFiles = (ArrayList<Song>) getIntent().getSerializableExtra("songs");
-            loadFirstSong();
-            show_list();
+        }
+        if (playIntent == null) {
+            playIntent = new Intent(this, MusicService.class);
+            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            startService(playIntent);
         }
     }
 
-    private void loadFirstSong() {
-        try {
-            song.setDataSource(getBaseContext(), songFiles.get(songId).getUri());
-            song.prepare();
-        } catch (IOException e) {
-            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            songId += 1;
-            loadFirstSong();
+
+    //connect to the service
+    private ServiceConnection musicConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+            //get service
+            musicSvc = binder.getService();
+            //pass list
+            musicSvc.setList(songFiles);
+            musicSvc.setSong(0);
+            musicBound = true;
+            show_list();
         }
-    }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+        }
+    };
 
     public void toggleFullscreen(boolean fullscreen)
     {
@@ -120,6 +140,7 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
                 Intent rescan = new Intent(MainActivity.this, SplashActivity.class);
                 rescan.putExtra("rescan", true);
                 startActivity(rescan);
+                finish();
                 break;
             case R.id.action_about:
                 Intent about = new Intent(MainActivity.this,About.class);
@@ -156,103 +177,58 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
                 togglePlayPause();
                 break;
             case R.id.bNext:
-                nextSong();
+                musicSvc.nextSong();
+                updateSongInfo();
                 break;
             case R.id.bPrev:
-                prevSong();
+                musicSvc.prevSong();
+                updateSongInfo();
                 break;
             case R.id.bBrowse:
                 show_list();
         }
     }
 
-    private void prevSong() {
-        if (song.getCurrentPosition() > 3000) {
-            song.seekTo(0);
-            return;
-        }
-        songId -= 1;
-        if (songId < 0)
-            songId += songFiles.size();
-        Uri fileUri = songFiles.get(songId).getUri();
-        try {
-            song.reset();
-            song.setDataSource(getBaseContext(), fileUri);
-            song.prepare();
-            song.start();
-            if (playerFrag.isVisible()) {
-                playerFrag.updateAlbumArt();
-                playerFrag.updateTags();
-                playerFrag.setMaxDuration(song.getDuration());
-            } else if (miniPlayerFragment.isVisible())
-                miniPlayerFragment.updateTags();
-        } catch (IOException e) {
-            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            prevSong();
-        }
-    }
-
-    private void nextSong() {
-        songId += 1;
-        songId %= songFiles.size();
-        Uri fileUri = songFiles.get(songId).getUri();
-        try {
-            song.reset();
-            song.setDataSource(getBaseContext(), fileUri);
-            song.prepare();
-            song.start();
-            if (playerFrag.isVisible()) {
-                playerFrag.updateAlbumArt();
-                playerFrag.updateTags();
-                playerFrag.setMaxDuration(song.getDuration());
-            } else if (miniPlayerFragment.isVisible())
-                miniPlayerFragment.updateTags();
-        } catch (IOException e) {
-            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            nextSong();
-        }
+    private void updateSongInfo() {
+        if (playerFrag.isVisible()) {
+            playerFrag.updateAlbumArt();
+            playerFrag.updateTags();
+            playerFrag.setMaxDuration(musicSvc.getDuration());
+        } else if (miniPlayerFragment.isVisible())
+            miniPlayerFragment.updateTags();
     }
 
     private void togglePlayPause() {
-        if (song.isPlaying()) {
-            song.pause();
-        } else {
-            song.start();
-        }
+        musicSvc.togglePlayPause();
     }
 
     @Override
     public void open_song(int position) {
-        songId = position;
-        Uri fileUri = songFiles.get(songId).getUri();
+        musicSvc.setSong(position);
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.remove(miniPlayerFragment);
         transaction.remove(songListFragment);
 
         transaction.add(R.id.container, playerFrag);
+        transaction.addToBackStack(null);
+
         transaction.commit();
-        try {
-            song.reset();
-            song.setDataSource(getBaseContext(), fileUri);
-            song.prepare();
-            song.start();
-        } catch (IOException e) {
-            Toast.makeText(getBaseContext(), songFiles.get(songId).getFile_Name() + " doesn't exist...", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            nextSong();
-        }
+        musicSvc.playSong();
     }
 
     public void show_list() {
         manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.remove(playerFrag);
+        if (manager.getBackStackEntryCount() > 0)
+            manager.popBackStack();
+        else {
+            FragmentTransaction transaction = manager.beginTransaction();
 
-        transaction.add(R.id.container, songListFragment);
-        transaction.add(R.id.container, miniPlayerFragment);
-        transaction.commit();
+            transaction.remove(playerFrag);
+
+            transaction.add(R.id.container, songListFragment);
+            transaction.add(R.id.container, miniPlayerFragment);
+            transaction.commit();
+        }
     }
 
     @Override
@@ -260,20 +236,23 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         return songFiles;
     }
 
-
     @Override
-    public MediaPlayer get_song() {
-        return song;
+    protected void onDestroy() {
+        Log.e("Called", "onDestroy");
+        stopService(playIntent);
+        unbindService(musicConnection);
+        musicSvc = null;
+        super.onDestroy();
     }
 
     @Override
     public void set_progress(int i) {
-        song.seekTo(i);
+        musicSvc.seekTo(i);
     }
 
     @Override
     public void set_volume(float vol) {
-        song.setVolume(vol, vol);
+        musicSvc.setVolume(vol);
     }
 
     @Override
@@ -283,45 +262,72 @@ public class MainActivity extends Activity implements Communicator, MediaPlayer.
         transaction.remove(songListFragment);
 
         transaction.add(R.id.container, playerFrag);
+        transaction.addToBackStack(null);
         transaction.commit();
     }
 
     @Override
     public String get_artist() {
-        return songFiles.get(songId).getArtist();
+        return songFiles.get(musicSvc.playingIndex()).getArtist();
     }
 
     @Override
     public String get_album() {
-        return songFiles.get(songId).getAlbum();
+        return songFiles.get(musicSvc.playingIndex()).getAlbum();
     }
 
     @Override
     public String get_title() {
-        return songFiles.get(songId).getTitle();
+        return songFiles.get(musicSvc.playingIndex()).getTitle();
     }
 
     @Override
     public byte[] get_album_art() {
-        return songFiles.get(songId).getAlbum_Art(getBaseContext());
+        return songFiles.get(musicSvc.playingIndex()).getAlbum_Art(getBaseContext());
     }
 
     @Override
     public int get_song_id() {
-        return songId;
+        return musicSvc.playingIndex();
     }
 
     @Override
-    protected void onStop() {
-        song.release();
-        finish();
-        super.onStop();
+    public int get_duration() {
+        return musicSvc.getDuration();
     }
 
     @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        //Auto switch to next song on completion
-        nextSong();
+    public int get_elapsed() {
+        return musicSvc.getElapsed();
     }
 
+    @Override
+    public boolean is_playing() {
+        return musicSvc.isPlaying();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (songCompletedListener == null)
+            songCompletedListener = new SongCompletedListener();
+        IntentFilter intentFilter = new IntentFilter("Refresh the Song Info");
+        registerReceiver(songCompletedListener, intentFilter);
+        updateSongInfo();
+    }
+
+    @Override
+    protected void onPause() {
+        if (songCompletedListener != null) unregisterReceiver(songCompletedListener);
+        super.onPause();
+    }
+
+    private class SongCompletedListener extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("Refresh the Song Info")) {
+                updateSongInfo();
+            }
+        }
+    }
 }

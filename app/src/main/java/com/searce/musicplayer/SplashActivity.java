@@ -129,16 +129,16 @@ public class SplashActivity extends Activity{
                 String thisAlbum = musicCursor.getString(albumColumn);
                 String thisDuration = musicCursor.getString(durationColumn);
                 // Just for the heck of it, showing off the loading bar.
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(10);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
                 numFilesFound++;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        tvFound.setText("Found " + numFilesFound + " files so far...");
+                        tvFound.setText("Found " + numFilesFound + " files...");
                         pbLoading.setProgress(numFilesFound);
                     }
                 });
@@ -176,6 +176,7 @@ public class SplashActivity extends Activity{
             Intent main = new Intent(getBaseContext(), MainActivity.class);
             main.putExtra("songs", songFiles);
             startActivity(main);
+            finish();
         }
 
         @Override

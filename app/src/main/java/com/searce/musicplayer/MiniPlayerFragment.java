@@ -40,7 +40,7 @@ public class MiniPlayerFragment extends Fragment implements View.OnClickListener
         tvArtist.setSelected(true);
         bPlayPause.setOnClickListener(this);
         comm = (Communicator) getActivity();
-        if(comm.get_song().isPlaying()){
+        if (comm.is_playing()) {
             bPlayPause.setBackgroundResource(android.R.drawable.ic_media_pause);
         }
         else{
@@ -62,7 +62,7 @@ public class MiniPlayerFragment extends Fragment implements View.OnClickListener
                 break;
             case R.id.bPlay_MiniPlayerFrag:
                 comm.song_operations(R.id.bPlay);
-                if(comm.get_song().isPlaying()){
+                if (comm.is_playing()) {
                     bPlayPause.setBackgroundResource(android.R.drawable.ic_media_pause);
                 }
                 else{

@@ -70,16 +70,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tvArtist.setSelected(true);
         updateAlbumArt();
         updateTags();
-        setMaxDuration(comm.get_song().getDuration());
-        asyncPlay = new AsyncPlay();
-        asyncPlay.execute();
-        if (!comm.get_song().isPlaying()) {
-            int elapsed = comm.get_song().getCurrentPosition() / 1000;
-            int remaining = (comm.get_song().getDuration() - comm.get_song().getCurrentPosition()) / 1000;
-            tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
-            tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
-            bPlay.setBackgroundResource(R.drawable.custom_play);
-        }
+        setMaxDuration(comm.get_duration());
     }
 
     @Override
@@ -89,9 +80,26 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     }
 
     @Override
+    public void onResume() {
+        asyncPlay = new AsyncPlay();
+        asyncPlay.execute();
+        if (!comm.is_playing()) {
+            updateTimers(comm.get_elapsed());
+            bPlay.setBackgroundResource(R.drawable.custom_play);
+        }
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        asyncPlay.cancel(true);
+        super.onPause();
+    }
+
+    @Override
     public void onClick(View v) {
         comm.song_operations(v.getId());
-        if(comm.get_song().isPlaying())
+        if (comm.is_playing())
             bPlay.setBackgroundResource(R.drawable.custom_pause);
         else
             bPlay.setBackgroundResource(R.drawable.custom_play);
@@ -105,10 +113,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     public void onProgressChanged(final SeekBar seekBar, int i, boolean b) {
         if (b) {
             new_progress = i;
-            int elapsed = new_progress / 1000;
-            int remaining = (seekBar.getMax() - new_progress) / 1000;
-            tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
-            tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
+            updateTimers(i);
         }
     }
 
@@ -128,7 +133,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     public class AsyncPlay extends AsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute() {
-            seekBar.setMax(comm.get_song().getDuration());
+            seekBar.setMax(comm.get_duration());
         }
 
         @Override
@@ -137,7 +142,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
                 if (skip_progress_updates) {
                     continue;
                 }
-                if (comm.get_song().isPlaying()) {
+                if (comm.is_playing()) {
                     if (tvElapsed.getVisibility() == View.INVISIBLE) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
@@ -147,14 +152,11 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
                             }
                         });
                     }
-                    seekBar.setProgress(comm.get_song().getCurrentPosition());
+                    seekBar.setProgress(comm.get_elapsed());
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            int elapsed = comm.get_song().getCurrentPosition() / 1000;
-                            int remaining = (comm.get_song().getDuration() - comm.get_song().getCurrentPosition()) / 1000;
-                            tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
-                            tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
+                            updateTimers(comm.get_elapsed());
                         }
                     });
                 } else {
@@ -186,6 +188,13 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
             }
             return null;
         }
+    }
+
+    private void updateTimers(int progress) {
+        int elapsed = progress / 1000;
+        int remaining = (comm.get_duration() - progress) / 1000;
+        tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
+        tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
     }
 
     String get_minutes(int secs) {
