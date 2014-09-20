@@ -3,12 +3,9 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-    </style>
-
-    <style name="myRatingBar" parent="@android:style/Widget.RatingBar">
-        <item name="android:progressDrawable">@drawable/my_ratingbar_full</item>
-        <item name="android:minHeight">48dip</item>
-        <item name="android:maxHeight">48dip</item>
+        <!--<item name="android:fastScrollOverlayPosition">atThumb</item>-->
+        <!--<item name="android:fastScrollTextColor">#ffffffff</item>-->
+        <!--<item name="android:fastScrollPreviewBackgroundRight">@android:color/holo_blue_dark</item>-->
     </style>
 
 </resources>

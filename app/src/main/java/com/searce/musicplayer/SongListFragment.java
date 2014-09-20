@@ -11,19 +11,27 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Layout;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AlphabetIndexer;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Created by debowin on 7/9/14.
@@ -46,13 +54,17 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         super.onActivityCreated(savedInstanceState);
         comm = (Communicator) getActivity();
         lvSongs = (ListView) getActivity().findViewById(R.id.lvSongs);
-        lvSongs.setScrollingCacheEnabled(false);
         lvSongs.setOnItemClickListener(this);
 
+        refreshList();
+    }
+
+    public void refreshList() {
         songFiles = comm.get_song_list();
         songId = comm.get_song_id();
         songAdapter = new SongListAdapter(songFiles);
         lvSongs.setAdapter(songAdapter);
+        lvSongs.setSelectionFromTop(songId, lvSongs.getHeight() / 2);
         Log.e("MP3 files found...", String.valueOf(songFiles.size()));
     }
 
@@ -68,12 +80,36 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         ImageView imageHolder;
     }
 
-    public class SongListAdapter extends BaseAdapter {
+    public class SongListAdapter extends BaseAdapter implements SectionIndexer {
         ArrayList<Song> songs;
-
+        HashMap<String, Integer> mapSectionToPosn;
+        SparseArray<String> mapPosnToSection;
+        String[] sections;
 
         SongListAdapter(ArrayList<Song> songs) {
             this.songs = songs;
+            mapSectionToPosn = new HashMap<String, Integer>();
+            mapPosnToSection = new SparseArray<String>();
+            for (int i = 0; i < songs.size(); i++) {
+                String firstch = songs.get(i).getTitle().substring(0, 1);
+//                firstch = firstch.toUpperCase(Locale.US);
+                if (!mapSectionToPosn.containsKey(firstch))
+                    mapSectionToPosn.put(firstch, i);
+                mapPosnToSection.put(i, firstch);
+            }
+            Set<String> sectionLetters = mapSectionToPosn.keySet();
+            Log.e("sectionLetters", sectionLetters.toString());
+            ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
+            Log.e("sectionList", sectionList.toString());
+
+            Collections.sort(sectionList);
+
+            sections = new String[sectionList.size()];
+
+            sectionList.toArray(sections);
+            for (String section : sections) {
+                Log.e("sections", section);
+            }
         }
 
         @Override
@@ -83,7 +119,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 
         @Override
         public Object getItem(int i) {
-            return null;
+            return songs.get(i);
         }
 
         @Override
@@ -111,13 +147,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 //                Log.e("Awesome","Got the view.");
                 viewHolder = (ViewHolderItem) view.getTag();
             }
-            if (songs.get(i).getTitle().length() > 25)
-                viewHolder.titleHolder.setText(songs.get(i).getTitle().substring(0, 25) + "...");
-            else
                 viewHolder.titleHolder.setText(songs.get(i).getTitle());
-            if (songs.get(i).getArtist().length() > 30)
-                viewHolder.artistHolder.setText(songs.get(i).getArtist().substring(0, 30) + "...");
-            else
                 viewHolder.artistHolder.setText(songs.get(i).getArtist());
             viewHolder.durationHolder.setText(songs.get(i).getDuration());
 
@@ -126,6 +156,28 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
             } else
                 viewHolder.imageHolder.setImageResource(R.drawable.song_icon);
             return view;
+        }
+
+        @Override
+        public String[] getSections() {
+            return sections;
+        }
+
+        @Override
+        public int getPositionForSection(int section) {
+//            Log.e("Sec->Pos", String.valueOf(section)+"->"+String.valueOf(mapSectionToPosn.get(sections[section])));
+            return mapSectionToPosn.get(sections[section]);
+        }
+
+        @Override
+        public int getSectionForPosition(int position) {
+            for (int i = 0; i < sections.length; i++) {
+                if (mapPosnToSection.get(position).equals(sections[i])) {
+//                    Log.e("Pos->Sec", String.valueOf(position)+"->"+String.valueOf(i));
+                    return i;
+                }
+            }
+            return 0;
         }
     }
 }

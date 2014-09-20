@@ -49,7 +49,7 @@ public class SplashActivity extends Activity{
         tvFound = (TextView) findViewById(R.id.tvFound);
         numFilesFound = 0;
         songFiles = new ArrayList<Song>();
-        tvFound.setText("Found no files so far...");
+        tvFound.setText("Found nothing...");
         exited = false;
         sortOrder = MediaStore.Audio.Media.TITLE;
         new AsyncContentResolve().execute();

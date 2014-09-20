@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 
-interface Communicator{
+interface Communicator {
     public void playback_mode(int id, boolean status);
 
     public void song_operations(int id);
@@ -71,6 +71,7 @@ public class MainActivity extends Activity implements Communicator {
     float songVol;
 
     FragmentManager manager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,8 +112,7 @@ public class MainActivity extends Activity implements Communicator {
         }
     };
 
-    public void toggleFullscreen(boolean fullscreen)
-    {
+    public void toggleFullscreen(boolean fullscreen) {
         if (fullscreen)
             getActionBar().hide();
         else
@@ -131,7 +131,7 @@ public class MainActivity extends Activity implements Communicator {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_search:
                 break;
             case R.id.action_settings:
@@ -143,7 +143,7 @@ public class MainActivity extends Activity implements Communicator {
                 finish();
                 break;
             case R.id.action_about:
-                Intent about = new Intent(MainActivity.this,About.class);
+                Intent about = new Intent(MainActivity.this, About.class);
                 startActivity(about);
                 break;
             case R.id.action_exit:
@@ -155,7 +155,7 @@ public class MainActivity extends Activity implements Communicator {
 
     @Override
     public void playback_mode(int id, boolean status) {
-        switch(id){
+        switch (id) {
             case R.id.tbRep:
                 if (status)
                     Toast.makeText(getBaseContext(), "Repeat Enabled", Toast.LENGTH_SHORT).show();
@@ -170,9 +170,10 @@ public class MainActivity extends Activity implements Communicator {
                 break;
         }
     }
+
     @Override
     public void song_operations(int id) {
-        switch(id){
+        switch (id) {
             case R.id.bPlay:
                 togglePlayPause();
                 break;
@@ -194,8 +195,10 @@ public class MainActivity extends Activity implements Communicator {
             playerFrag.updateAlbumArt();
             playerFrag.updateTags();
             playerFrag.setMaxDuration(musicSvc.getDuration());
-        } else if (miniPlayerFragment.isVisible())
+        } else if (miniPlayerFragment.isVisible()) {
             miniPlayerFragment.updateTags();
+            songListFragment.refreshList();
+        }
     }
 
     private void togglePlayPause() {
