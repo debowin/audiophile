@@ -4,11 +4,11 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="0px"
-    android:layout_weight="15"
+    android:layout_weight="20"
     android:background="@drawable/custom_mini_player"
     android:clickable="true"
     android:id="@+id/rlPlayer"
-    android:gravity="bottom">
+    android:gravity="top">
 
     <TextView
         android:layout_width="260dp"
@@ -17,6 +17,7 @@
         android:ellipsize="marquee"
         android:scrollHorizontally="true"
         android:lines="1"
+        android:text="Song Title"
         android:singleLine="true"
         android:fadingEdge="horizontal"
         android:marqueeRepeatLimit="marquee_forever"
@@ -25,13 +26,16 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:textColor="#ffffffff" />
+        android:textColor="#ffffffff"
+        android:gravity="center_vertical"
+        android:layout_marginTop="5dp" />
 
     <TextView
         android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:ellipsize="marquee"
+        android:text="Song Artist"
         android:scrollHorizontally="true"
         android:lines="1"
         android:singleLine="true"
@@ -45,7 +49,7 @@
         android:textColor="#ffffffff" />
 
     <Button
-        android:layout_width="40dp"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:id="@+id/bPlay_MiniPlayerFrag"
@@ -57,9 +61,9 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="2dp"
         android:background="#ffffffff"
         android:layout_above="@+id/tvSongTitle_MiniPlayerFrag"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginBottom="20dp" />
 </RelativeLayout>

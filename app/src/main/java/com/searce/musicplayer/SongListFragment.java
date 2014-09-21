@@ -56,16 +56,17 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         lvSongs = (ListView) getActivity().findViewById(R.id.lvSongs);
         lvSongs.setOnItemClickListener(this);
 
-        refreshList();
-    }
-
-    public void refreshList() {
         songFiles = comm.get_song_list();
         songId = comm.get_song_id();
         songAdapter = new SongListAdapter(songFiles);
         lvSongs.setAdapter(songAdapter);
         lvSongs.setSelectionFromTop(songId, lvSongs.getHeight() / 2);
         Log.e("MP3 files found...", String.valueOf(songFiles.size()));
+    }
+
+    public void refreshList() {
+        songId = comm.get_song_id();
+        songAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -91,25 +92,24 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
             mapSectionToPosn = new HashMap<String, Integer>();
             mapPosnToSection = new SparseArray<String>();
             for (int i = 0; i < songs.size(); i++) {
-                String firstch = songs.get(i).getTitle().substring(0, 1);
-//                firstch = firstch.toUpperCase(Locale.US);
-                if (!mapSectionToPosn.containsKey(firstch))
-                    mapSectionToPosn.put(firstch, i);
-                mapPosnToSection.put(i, firstch);
+                String firstchar = songs.get(i).getTitle().substring(0, 1);
+                firstchar = firstchar.toUpperCase(Locale.US);
+                if (firstchar.matches("[0-9]"))
+                    firstchar = "#";
+                if (!mapSectionToPosn.containsKey(firstchar))
+                    mapSectionToPosn.put(firstchar, i);
+                mapPosnToSection.put(i, firstchar);
             }
             Set<String> sectionLetters = mapSectionToPosn.keySet();
-            Log.e("sectionLetters", sectionLetters.toString());
+//            Log.e("sectionLetters", sectionLetters.toString());
             ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
-            Log.e("sectionList", sectionList.toString());
+//            Log.e("sectionList", sectionList.toString());
 
             Collections.sort(sectionList);
 
             sections = new String[sectionList.size()];
 
             sectionList.toArray(sections);
-            for (String section : sections) {
-                Log.e("sections", section);
-            }
         }
 
         @Override

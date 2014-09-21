@@ -37,7 +37,6 @@ public class SplashActivity extends Activity{
     ArrayList<Song> songFiles;
     int numFilesFound;
     File listfile;
-    String sortOrder;
     boolean exited;
 
     @Override
@@ -51,7 +50,6 @@ public class SplashActivity extends Activity{
         songFiles = new ArrayList<Song>();
         tvFound.setText("Found nothing...");
         exited = false;
-        sortOrder = MediaStore.Audio.Media.TITLE;
         new AsyncContentResolve().execute();
     }
 
@@ -98,7 +96,7 @@ public class SplashActivity extends Activity{
     private void fetch_list() {
         ContentResolver musicResolver = getContentResolver();
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        final Cursor musicCursor = musicResolver.query(musicUri, null, null, null, sortOrder);
+        final Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

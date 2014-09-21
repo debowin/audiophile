@@ -26,6 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 interface Communicator {
     public void playback_mode(int id, boolean status);
@@ -82,6 +85,7 @@ public class MainActivity extends Activity implements Communicator {
             miniPlayerFragment = new MiniPlayerFragment();
             songVol = 0.5f;
             songFiles = (ArrayList<Song>) getIntent().getSerializableExtra("songs");
+            Collections.sort(songFiles);
         }
         if (playIntent == null) {
             playIntent = new Intent(this, MusicService.class);
@@ -157,16 +161,10 @@ public class MainActivity extends Activity implements Communicator {
     public void playback_mode(int id, boolean status) {
         switch (id) {
             case R.id.tbRep:
-                if (status)
-                    Toast.makeText(getBaseContext(), "Repeat Enabled", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(getBaseContext(), "Repeat Disabled", Toast.LENGTH_SHORT).show();
+                musicSvc.repeatSongs(status);
                 break;
             case R.id.tbShuf:
-                if (status)
-                    Toast.makeText(getBaseContext(), "Shuffle Enabled", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(getBaseContext(), "Shuffle Disabled", Toast.LENGTH_SHORT).show();
+                musicSvc.shuffleSongs(status);
                 break;
         }
     }
@@ -207,6 +205,7 @@ public class MainActivity extends Activity implements Communicator {
 
     @Override
     public void open_song(int position) {
+        musicSvc.setStartIndex(position);
         musicSvc.setSong(position);
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.remove(miniPlayerFragment);
@@ -241,7 +240,6 @@ public class MainActivity extends Activity implements Communicator {
 
     @Override
     protected void onDestroy() {
-        Log.e("Called", "onDestroy");
         stopService(playIntent);
         unbindService(musicConnection);
         musicSvc = null;
@@ -332,5 +330,13 @@ public class MainActivity extends Activity implements Communicator {
                 updateSongInfo();
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (manager.getBackStackEntryCount() > 0)
+            manager.popBackStack();
+        else
+            moveTaskToBack(true);
     }
 }

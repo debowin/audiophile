@@ -85,7 +85,7 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="2dp"
+            android:layout_height="0dp"
             android:layout_below="@+id/tvArtist_TitleFrag"
             android:background="#ffffffff"></View>
 
@@ -179,7 +179,6 @@
                 android:layout_height="30dp"
                 android:layout_marginRight="30dp"
                 android:background="@drawable/custom_shuffle"
-                android:checked="false"
                 android:text=""
                 android:textOff=""
                 android:textOn="" />

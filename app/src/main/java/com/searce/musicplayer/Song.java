@@ -13,7 +13,7 @@ import java.io.Serializable;
 /**
  * Created by debowin on 15/9/14.
  */
-public class Song implements Serializable {
+public class Song implements Serializable, Comparable<Song> {
     private long id;
     private String file_name;
     private String title;
@@ -80,5 +80,10 @@ public class Song implements Serializable {
 
     public Uri getUri() {
         return ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+    }
+
+    @Override
+    public int compareTo(Song song) {
+        return this.title.toUpperCase().compareTo(song.getTitle().toUpperCase());
     }
 }

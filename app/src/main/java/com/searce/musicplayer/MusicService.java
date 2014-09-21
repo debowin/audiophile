@@ -8,10 +8,12 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Observer;
+import java.util.Collections;
+import java.util.Random;
 
 /**
  * Created by debowin on 15/9/14.
@@ -20,12 +22,19 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     private MediaPlayer player;
     private ArrayList<Song> playlist;
     private int songPosn;
+    private boolean shuffle, repeat;
     private final IBinder musicBind = new MusicBinder();
+    private ArrayList<Integer> shuffle_list;
+    private int startIndex;
 
     @Override
     public void onCreate() {
         super.onCreate();
         songPosn = 0;
+        startIndex = 0;
+        shuffle = false;
+        repeat = false;
+        shuffle_list = new ArrayList<Integer>();
         player = new MediaPlayer();
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
@@ -40,8 +49,33 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void setList(ArrayList<Song> list) {
         playlist = list;
+        for (int i = 0; i < playlist.size(); i++)
+            shuffle_list.add(i);
     }
 
+    public void shuffleSongs(boolean status) {
+        if (!shuffle && status) {
+            Toast.makeText(getBaseContext(), "Shuffle Enabled", Toast.LENGTH_SHORT).show();
+            long seed = System.nanoTime();
+            Collections.shuffle(shuffle_list, new Random(seed));
+            songPosn = shuffle_list.lastIndexOf(songPosn);
+            setStartIndex(songPosn);
+        } else if (shuffle && !status) {
+            Toast.makeText(getBaseContext(), "Shuffle Disabled", Toast.LENGTH_SHORT).show();
+            songPosn = shuffle_list.get(songPosn);
+            for (int i = 0; i < playlist.size(); i++)
+                shuffle_list.set(i, i);
+        }
+        shuffle = status;
+    }
+
+    public void repeatSongs(boolean status) {
+        if (status)
+            Toast.makeText(getBaseContext(), "Repeat Enabled", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(getBaseContext(), "Repeat Disabled", Toast.LENGTH_SHORT).show();
+        repeat = status;
+    }
     public void togglePlayPause() {
         if (player.isPlaying()) {
             player.pause();
@@ -59,7 +93,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     public int playingIndex() {
-        return songPosn;
+        return shuffle_list.get(songPosn);
     }
 
     public boolean isPlaying() {
@@ -68,6 +102,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public int getElapsed() {
         return player.getCurrentPosition();
+    }
+
+    public void setStartIndex(int startIndex) {
+        // To set a starting point for repeat.
+        // Once playback reaches this point and repeat is disabled, stop playback.
+        this.startIndex = shuffle_list.lastIndexOf(startIndex);
     }
 
     public class MusicBinder extends Binder {
@@ -93,9 +133,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     public void setSong(int newPosn) {
-        songPosn = newPosn;
+        songPosn = shuffle_list.lastIndexOf(newPosn);
         player.reset();
-        Song currsong = playlist.get(songPosn);
+        Song currsong = playlist.get(newPosn);
         Uri fileUri = currsong.getUri();
         try {
             player.setDataSource(getBaseContext(), fileUri);
@@ -111,24 +151,27 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void prevSong() {
         if (player.getCurrentPosition() > 3000) {
-            player.stop();
-            player.start();
+            player.seekTo(0);
             return;
         }
         songPosn -= 1;
         if (songPosn < 0)
-            // TODO: Only for repeat
             songPosn += playlist.size();
-        setSong(songPosn);
+        setSong(shuffle_list.get(songPosn));
         playSong();
     }
 
     public void nextSong() {
-        songPosn += 1;
-        songPosn %= playlist.size();
-        setSong(songPosn);
-        // TODO: Only for repeat
-        playSong();
+        if (!repeat && (songPosn + 1) % playlist.size() == startIndex) {
+            Toast.makeText(getBaseContext(), "End of Playlist", Toast.LENGTH_SHORT).show();
+            setSong(shuffle_list.get(songPosn));
+            seekTo(0);
+        } else {
+            songPosn += 1;
+            songPosn %= playlist.size();
+            setSong(shuffle_list.get(songPosn));
+            playSong();
+        }
     }
 
     public int getDuration() {
