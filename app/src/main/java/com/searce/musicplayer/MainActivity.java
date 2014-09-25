@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.AudioManager;
 import android.media.MediaMetadataEditor;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -79,11 +80,12 @@ public class MainActivity extends Activity implements Communicator {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         if (savedInstanceState == null) {
             playerFrag = new PlayerFragment();
             songListFragment = new SongListFragment();
             miniPlayerFragment = new MiniPlayerFragment();
-            songVol = 0.5f;
+            songVol = 1;
             songFiles = (ArrayList<Song>) getIntent().getSerializableExtra("songs");
             Collections.sort(songFiles);
         }
@@ -185,6 +187,11 @@ public class MainActivity extends Activity implements Communicator {
                 break;
             case R.id.bBrowse:
                 show_list();
+                break;
+            case R.id.bVolume:
+                AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI);
+                break;
         }
     }
 

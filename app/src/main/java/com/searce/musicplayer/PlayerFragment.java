@@ -29,7 +29,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     TextView tvTitle;
     TextView tvAlbum;
     TextView tvArtist;
-    Button bList;
+    Button bList, bVolume;
     Communicator comm;
     AsyncPlay asyncPlay;
     int new_progress;
@@ -57,11 +57,14 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tvAlbum = (TextView) getActivity().findViewById(R.id.tvAlbum_TitleFrag);
         tvArtist = (TextView) getActivity().findViewById(R.id.tvArtist_TitleFrag);
         bList = (Button) getActivity().findViewById(R.id.bBrowse);
+        bVolume = (Button) getActivity().findViewById(R.id.bVolume);
         ivAlbumArt = (ImageView) getActivity().findViewById(R.id.ivAlbumArt);
         bList.setOnClickListener(this);
         bPlay.setOnClickListener(this);
         bPrev.setOnClickListener(this);
         bNext.setOnClickListener(this);
+        bVolume.setOnClickListener(this);
+
         tbRep.setOnCheckedChangeListener(this);
         tbShuf.setOnCheckedChangeListener(this);
         seekBar.setOnSeekBarChangeListener(this);
@@ -103,6 +106,8 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
             bPlay.setBackgroundResource(R.drawable.custom_pause);
         else
             bPlay.setBackgroundResource(R.drawable.custom_play);
+        seekBar.setProgress(comm.get_elapsed());
+        updateTimers(comm.get_elapsed());
     }
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {

@@ -70,9 +70,9 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     public void repeatSongs(boolean status) {
-        if (status)
+        if (!repeat && status)
             Toast.makeText(getBaseContext(), "Repeat Enabled", Toast.LENGTH_SHORT).show();
-        else
+        else if (repeat && !status)
             Toast.makeText(getBaseContext(), "Repeat Disabled", Toast.LENGTH_SHORT).show();
         repeat = status;
     }

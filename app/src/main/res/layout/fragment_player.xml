@@ -110,17 +110,26 @@
             android:scaleType="fitXY"
             android:src="@drawable/splash" />
 
-        <RatingBar
-            android:id="@+id/rbRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-            android:numStars="5"
-            android:scaleX="0.5"
-            android:scaleY="0.5"
-            android:stepSize="1" />
+            android:background="#55000000"
+            android:gravity="center">
+
+            <RatingBar
+                android:id="@+id/rbRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:numStars="5"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:stepSize="1"
+                android:clickable="true" />
+        </LinearLayout>
+
     </RelativeLayout>
 
     <LinearLayout
