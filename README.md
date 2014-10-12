@@ -1,7 +1,8 @@
 audiophile
 ===========
 
-Music Player for the Android Platform
+Music Player for the Android Platform.
+Download the current APK here: [DOWNLOAD](app/app-release.apk)
 
 Player Screen
 

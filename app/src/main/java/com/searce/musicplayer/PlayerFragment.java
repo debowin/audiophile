@@ -25,10 +25,11 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     ImageView ivAlbumArt;
     ToggleButton tbRep, tbShuf;
     SeekBar seekBar;
-    TextView tvElapsed, tvRemaining;
+    TextView tvElapsed, tvRemaining, tvDuration;
     TextView tvTitle;
     TextView tvAlbum;
     TextView tvArtist;
+    TextView tvIndex;
     Button bList, bVolume;
     Communicator comm;
     AsyncPlay asyncPlay;
@@ -53,9 +54,11 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         seekBar = (SeekBar) getActivity().findViewById(R.id.sbTime);
         tvElapsed = (TextView) getActivity().findViewById(R.id.tvElapsed);
         tvRemaining = (TextView) getActivity().findViewById(R.id.tvRemaining);
+        tvDuration = (TextView) getActivity().findViewById(R.id.tvDuration_Player);
         tvTitle = (TextView) getActivity().findViewById(R.id.tvSongTitle_TitleFrag);
         tvAlbum = (TextView) getActivity().findViewById(R.id.tvAlbum_TitleFrag);
         tvArtist = (TextView) getActivity().findViewById(R.id.tvArtist_TitleFrag);
+        tvIndex = (TextView) getActivity().findViewById(R.id.tvIndex);
         bList = (Button) getActivity().findViewById(R.id.bBrowse);
         bVolume = (Button) getActivity().findViewById(R.id.bVolume);
         ivAlbumArt = (ImageView) getActivity().findViewById(R.id.ivAlbumArt);
@@ -147,13 +150,13 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
                 if (skip_progress_updates) {
                     continue;
                 }
+                // Revert to original colors on playing.
                 if (comm.is_playing()) {
-                    if (tvElapsed.getVisibility() == View.INVISIBLE) {
+                    if (tvElapsed.getCurrentTextColor() == getResources().getColor(R.color.white)) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                tvElapsed.setVisibility(View.VISIBLE);
-                                tvRemaining.setVisibility(View.VISIBLE);
+                                tvElapsed.setTextColor(getResources().getColor(R.color.holo));
                             }
                         });
                     }
@@ -166,20 +169,18 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
                     });
                 } else {
                     //Blinking effect on pause.
-                    if (tvElapsed.getVisibility() == View.VISIBLE) {
+                    if (tvElapsed.getCurrentTextColor() == getResources().getColor(R.color.white)) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                tvElapsed.setVisibility(View.INVISIBLE);
-                                tvRemaining.setVisibility(View.INVISIBLE);
+                                tvElapsed.setTextColor(getResources().getColor(R.color.holo));
                             }
                         });
-                    } else if (tvElapsed.getVisibility() == View.INVISIBLE) {
+                    } else if (tvElapsed.getCurrentTextColor() == getResources().getColor(R.color.holo)) {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                tvElapsed.setVisibility(View.VISIBLE);
-                                tvRemaining.setVisibility(View.VISIBLE);
+                                tvElapsed.setTextColor(getResources().getColor(R.color.white));
                             }
                         });
                     }
@@ -198,8 +199,8 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     private void updateTimers(int progress) {
         int elapsed = progress / 1000;
         int remaining = (comm.get_duration() - progress) / 1000;
-        tvElapsed.setText(get_minutes(elapsed) + ":" + get_seconds(elapsed));
-        tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining));
+        tvElapsed.setText(" " + get_minutes(elapsed) + ":" + get_seconds(elapsed) + " ");
+        tvRemaining.setText("- " + get_minutes(remaining) + ":" + get_seconds(remaining) + " ");
     }
 
     String get_minutes(int secs) {
@@ -225,6 +226,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tvTitle.setText(comm.get_title());
         tvAlbum.setText(comm.get_album());
         tvArtist.setText(comm.get_artist());
+        int index = comm.get_song_id() + 1;
+        tvIndex.setText(" " + index + " of " + comm.get_song_list().size() + " ");
+        tvDuration.setText(comm.get_song_list().get(comm.get_song_id()).getDuration());
     }
 
     public void setMaxDuration(int duration) {

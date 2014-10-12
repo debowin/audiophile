@@ -40,6 +40,7 @@
             android:focusableInTouchMode="true"
             android:scrollHorizontally="true"
             android:lines="1"
+            android:textStyle="bold"
             android:singleLine="true"
             android:fadingEdge="horizontal"
             android:marqueeRepeatLimit="marquee_forever"
@@ -87,7 +88,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_below="@+id/tvArtist_TitleFrag"
-            android:background="#ffffffff"></View>
+            android:background="#ffffffff" />
 
     </RelativeLayout>
 
@@ -114,20 +115,78 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:background="#55000000"
-            android:gravity="center">
+            android:gravity="center"
+            android:background="#77000000"
+            android:orientation="horizontal">
 
-            <RatingBar
-                android:id="@+id/rbRating"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <TextView
+                android:id="@+id/tvElapsed"
+                android:textStyle="bold"
+                android:shadowRadius="25"
+                android:textSize="17sp"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowColor="#ffcccccc"
+                android:layout_width="0dp"
+                android:layout_weight="15"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:layout_marginRight="15dp"
+                android:text="00:00"
+                android:textAlignment="center"
+                android:textColor="@android:color/holo_blue_bright" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="70"
+                android:orientation="vertical"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="match_parent"
                 android:gravity="center"
-                android:numStars="5"
-                android:scaleX="0.5"
-                android:scaleY="0.5"
-                android:stepSize="1"
-                android:clickable="true" />
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_height="wrap_content"
+                    android:shadowRadius="25"
+                    android:shadowDx="0"
+                    android:shadowDy="0"
+                    android:shadowColor="#ff000000"
+                    android:text=" 000 of 999 "
+                    android:textColor="@android:color/holo_blue_bright"
+                    android:id="@+id/tvIndex" />
+
+                <TextView
+                    android:gravity="center"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:shadowRadius="25"
+                    android:shadowDx="0"
+                    android:shadowDy="0"
+                    android:shadowColor="#ff000000"
+                    android:textColor="#fff"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tvDuration_Player"
+                    android:text=" 99:99 " />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvRemaining"
+                android:shadowRadius="25"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowColor="#ffcccccc"
+                android:layout_width="0dp"
+                android:textSize="17sp"
+                android:layout_weight="15"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textStyle="bold"
+                android:layout_marginLeft="15dp"
+                android:text="99:99"
+                android:textAlignment="center"
+                android:textColor="@android:color/holo_blue_bright" />
         </LinearLayout>
 
     </RelativeLayout>
@@ -140,40 +199,11 @@
         android:gravity="bottom"
         android:orientation="vertical">
 
-        <LinearLayout
+        <SeekBar
+            android:id="@+id/sbTime"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:weightSum="1">
-
-            <TextView
-                android:id="@+id/tvElapsed"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:text="00:00"
-                android:textAlignment="center"
-                android:textColor="@android:color/holo_blue_light" />
-
-            <SeekBar
-                android:id="@+id/sbTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:indeterminate="false" />
-
-            <TextView
-                android:id="@+id/tvRemaining"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:text="99:99"
-                android:textAlignment="center"
-                android:textColor="@android:color/holo_blue_light" />
-
-        </LinearLayout>
+            android:indeterminate="false" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -186,7 +216,7 @@
                 android:id="@+id/tbShuf"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginRight="30dp"
+                android:layout_marginRight="60dp"
                 android:background="@drawable/custom_shuffle"
                 android:text=""
                 android:textOff=""
@@ -214,7 +244,7 @@
                 android:id="@+id/tbRep"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginLeft="30dp"
+                android:layout_marginLeft="60dp"
                 android:background="@drawable/custom_repeat"
                 android:text=""
                 android:textOff=""
