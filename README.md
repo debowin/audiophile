@@ -1,14 +1,15 @@
 audiophile
 ===========
 
-Music Player for the Android Platform.
-Download the current APK here: [DOWNLOAD](app/app-release.apk)
+A simple Music Player for the Android Platform.
 
-Player Screen
+[Download](https://raw.github.com/debowin/audiophile/master/app/audiophile.apk) the latest APK.
 
-![alt tag](https://raw.github.com/debowin/audiophile/master/player_screen.png)
+The Player Screen
+
+![alt tag](player_screen.png)
 
 
-List Screen
+The Playlist Screen
 
-![alt tag](https://raw.github.com/debowin/audiophile/master/list_screen.png)
+![alt tag](list_screen.png)

@@ -147,8 +147,8 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 //                Log.e("Awesome","Got the view.");
                 viewHolder = (ViewHolderItem) view.getTag();
             }
-                viewHolder.titleHolder.setText(songs.get(i).getTitle());
-                viewHolder.artistHolder.setText(songs.get(i).getArtist());
+            viewHolder.titleHolder.setText(songs.get(i).getTitle());
+            viewHolder.artistHolder.setText(songs.get(i).getArtist());
             viewHolder.durationHolder.setText(songs.get(i).getDuration());
 
             if (songs.get(i).getId() == songFiles.get(songId).getId()) {

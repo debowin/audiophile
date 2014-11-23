@@ -163,7 +163,7 @@ public class MainActivity extends Activity implements Communicator {
     public void playback_mode(int id, boolean status) {
         switch (id) {
             case R.id.tbRep:
-                musicSvc.repeatSongs(status);
+                musicSvc.repeatSongs(status, get_song_id());
                 break;
             case R.id.tbShuf:
                 musicSvc.shuffleSongs(status);

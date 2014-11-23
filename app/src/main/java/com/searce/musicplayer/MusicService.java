@@ -69,11 +69,13 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         shuffle = status;
     }
 
-    public void repeatSongs(boolean status) {
+    public void repeatSongs(boolean status, int song_id) {
         if (!repeat && status)
             Toast.makeText(getBaseContext(), "Repeat Enabled", Toast.LENGTH_SHORT).show();
-        else if (repeat && !status)
+        else if (repeat && !status) {
             Toast.makeText(getBaseContext(), "Repeat Disabled", Toast.LENGTH_SHORT).show();
+            setStartIndex(song_id); // Whenever repeat is disabled, the current song should become the start index for repeat.
+        }
         repeat = status;
     }
     public void togglePlayPause() {
@@ -107,7 +109,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     public void setStartIndex(int startIndex) {
         // To set a starting point for repeat.
         // Once playback reaches this point and repeat is disabled, stop playback.
-        this.startIndex = shuffle_list.lastIndexOf(startIndex);
+        this.startIndex = startIndex;
     }
 
     public class MusicBinder extends Binder {

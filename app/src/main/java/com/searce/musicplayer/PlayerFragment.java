@@ -1,13 +1,16 @@
 package com.searce.musicplayer;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -35,6 +38,18 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     AsyncPlay asyncPlay;
     int new_progress;
     boolean skip_progress_updates;
+
+//    public class OnSwipeTouchListener implements View.OnTouchListener{
+//        private final GestureDetector gestureDetector;
+//        public OnSwipeTouchListener(Context ctx) {
+//            gestureDetector = new GestureDetector(ctx,new GestureListener());
+//        }
+//
+//        @Override
+//        public boolean onTouch(View view, MotionEvent motionEvent) {
+//            return false;
+//        }
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -71,6 +86,18 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tbRep.setOnCheckedChangeListener(this);
         tbShuf.setOnCheckedChangeListener(this);
         seekBar.setOnSeekBarChangeListener(this);
+        ivAlbumArt.setOnTouchListener(new OnSwipeTouchListener(getActivity().getBaseContext()) {
+            // For next/prev operation based on swipes.
+            @Override
+            public void onSwipeRight() {
+                comm.song_operations(bPrev.getId());
+            }
+
+            @Override
+            public void onSwipeLeft() {
+                comm.song_operations(bNext.getId());
+            }
+        });
         tvTitle.setSelected(true);
         tvAlbum.setSelected(true);
         tvArtist.setSelected(true);

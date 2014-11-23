@@ -132,7 +132,11 @@ public class SplashActivity extends Activity{
 //                } catch (InterruptedException e) {
 //                    e.printStackTrace();
 //                }
-                numFilesFound++;
+                // Filter out songs less than 5 seconds in length.
+                if (thisDuration != null && Integer.valueOf(thisDuration) > 5000) {
+                    songFiles.add(new Song(thisId, thisTitle, thisFileName, thisArtist, thisAlbum, thisDuration));
+                    numFilesFound++;
+                }
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -140,7 +144,6 @@ public class SplashActivity extends Activity{
                         pbLoading.setProgress(numFilesFound);
                     }
                 });
-                songFiles.add(new Song(thisId, thisTitle, thisFileName, thisArtist, thisAlbum, thisDuration));
                 if (exited)
                     break;
             }
