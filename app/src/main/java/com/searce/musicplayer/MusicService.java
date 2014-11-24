@@ -26,10 +26,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     private final IBinder musicBind = new MusicBinder();
     private ArrayList<Integer> shuffle_list;
     private int startIndex;
+    private float volume;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        volume = .50f;
         songPosn = 0;
         startIndex = 0;
         shuffle = false;
@@ -91,7 +93,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     public void setVolume(float vol) {
+        volume = vol;
         player.setVolume(vol, vol);
+    }
+
+    public float getVolume() {
+        return volume;
     }
 
     public int playingIndex() {

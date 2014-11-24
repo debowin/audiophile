@@ -72,8 +72,7 @@ public class MainActivity extends Activity implements Communicator {
     private Intent playIntent;
     private boolean musicBound = false;
     private SongCompletedListener songCompletedListener;
-    float songVol;
-
+    private Toast vol_toast;
     FragmentManager manager;
 
     @Override
@@ -85,9 +84,9 @@ public class MainActivity extends Activity implements Communicator {
             playerFrag = new PlayerFragment();
             songListFragment = new SongListFragment();
             miniPlayerFragment = new MiniPlayerFragment();
-            songVol = 1;
             songFiles = (ArrayList<Song>) getIntent().getSerializableExtra("songs");
             Collections.sort(songFiles);
+            vol_toast = Toast.makeText(getBaseContext(), "Volume", Toast.LENGTH_LONG);
         }
         if (playIntent == null) {
             playIntent = new Intent(this, MusicService.class);
@@ -259,8 +258,18 @@ public class MainActivity extends Activity implements Communicator {
     }
 
     @Override
-    public void set_volume(float vol) {
-        musicSvc.setVolume(vol);
+    public void set_volume(float diff_vol) {
+        float current_vol = musicSvc.getVolume();
+        float new_vol = current_vol + diff_vol;
+        if (new_vol <= 0.0f)
+            new_vol = 0.0f;
+        if (new_vol >= 1.0f)
+            new_vol = 1.0f;
+        Log.d("Volume Diff", String.valueOf(diff_vol));
+        String vol_text = "Volume: " + Math.round(new_vol / 1.0f * 100) + "%";
+        vol_toast.setText(vol_text);
+        vol_toast.show();
+        musicSvc.setVolume(new_vol);
     }
 
     @Override

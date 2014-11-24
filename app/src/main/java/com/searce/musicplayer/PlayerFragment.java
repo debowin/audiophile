@@ -86,16 +86,31 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
         tbRep.setOnCheckedChangeListener(this);
         tbShuf.setOnCheckedChangeListener(this);
         seekBar.setOnSeekBarChangeListener(this);
-        ivAlbumArt.setOnTouchListener(new OnSwipeTouchListener(getActivity().getBaseContext()) {
+        ivAlbumArt.setOnTouchListener(new OnSwipeTouchListener(ivAlbumArt.getContext()) {
             // For next/prev operation based on swipes.
             @Override
             public void onSwipeRight() {
-                comm.song_operations(bPrev.getId());
+                onClick(bPrev);
             }
 
             @Override
             public void onSwipeLeft() {
-                comm.song_operations(bNext.getId());
+                onClick(bNext);
+            }
+
+            // For inc/dec volume based on scrolls.
+            @Override
+            public void onSlideUp(float distance) {
+                distance = distance / ivAlbumArt.getHeight();
+                comm.set_volume(distance);
+                // We want positive diff on upward slide.
+            }
+
+            @Override
+            public void onSlideDown(float distance) {
+                distance = distance / ivAlbumArt.getHeight();
+                comm.set_volume(distance);
+                // We want negative diff on downward slide.
             }
         });
         tvTitle.setSelected(true);
@@ -154,7 +169,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        comm.set_volume(0);
         skip_progress_updates = true;
     }
 
@@ -162,7 +176,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Co
     public void onStopTrackingTouch(SeekBar seekBar) {
         comm.set_progress(new_progress);
         skip_progress_updates = false;
-        comm.set_volume(1);
     }
 
     public class AsyncPlay extends AsyncTask<Void, Void, Void> {

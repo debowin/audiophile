@@ -31,7 +31,7 @@ import java.util.ArrayList;
 /**
  * Created by root on 3/9/14.
  */
-public class SplashActivity extends Activity{
+public class SplashActivity extends Activity {
     ProgressBar pbLoading;
     TextView tvFound;
     ArrayList<Song> songFiles;
@@ -44,7 +44,7 @@ public class SplashActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         getActionBar().hide();
-        pbLoading = (ProgressBar)findViewById(R.id.pbLoading);
+        pbLoading = (ProgressBar) findViewById(R.id.pbLoading);
         tvFound = (TextView) findViewById(R.id.tvFound);
         numFilesFound = 0;
         songFiles = new ArrayList<Song>();
@@ -148,6 +148,13 @@ public class SplashActivity extends Activity{
                     break;
             }
             while (musicCursor.moveToNext());
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tvFound.setText("Found " + numFilesFound + " files...");
+                    pbLoading.setProgress(musicCursor.getCount());
+                }
+            });
         }
     }
 

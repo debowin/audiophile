@@ -24,6 +24,7 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
     private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
         private static final int SWIPE_THRESHOLD = 200;
         private static final int SWIPE_VELOCITY_THRESHOLD = 200;
+        private static final int SCROLL_THRESHOLD = 20;
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -45,6 +46,19 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
             }
             return false;
         }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (Math.abs(distanceY) > Math.abs(distanceX) && Math.abs(distanceY) > SCROLL_THRESHOLD) {
+                if (distanceY > 0) {
+                    onSlideDown(distanceY);
+                } else {
+                    onSlideUp(distanceY);
+                }
+                return true;
+            }
+            return false;
+        }
     }
 
     public void onSwipeRight() {
@@ -52,6 +66,14 @@ public class OnSwipeTouchListener implements View.OnTouchListener {
     }
 
     public void onSwipeLeft() {
+
+    }
+
+    public void onSlideUp(float distance) {
+
+    }
+
+    public void onSlideDown(float distance) {
 
     }
 }
